@@ -1,0 +1,16 @@
+.claude/
+.codex/
+.codegraph/
+.gemini/
+.opencode/
+.crush/
+.vscode/
+.idea/
+.agents/
+.aic/*
+!.aic/
+!.aic/.aicrc
+.tem/
+/CLAUDE.md
+/AGENT.md
+/GEMINI.md

@@ -1,0 +1,57 @@
+#!/bin/bash
+# 构建脚本 - 基于 env.sh 中的配置构建并推送镜像
+# 用法：./docker/build.sh [--push] [--no-cache] [--platform linux/amd64]
+
+set -e
+cd "$(dirname "$0")"
+source ./env.sh
+
+# ---- 参数解析 ----
+PLATFORM="linux/amd64"
+PUSH=false
+NO_CACHE=false
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --platform) PLATFORM="$2"; shift 2 ;;
+        --push)     PUSH=true; shift ;;
+        --no-cache) NO_CACHE=true; shift ;;
+        *) echo "未知参数: $1"; echo "用法: $0 [--platform] [--push] [--no-cache]"; exit 1 ;;
+    esac
+done
+
+# ---- 构建信息 ----
+echo "================================================"
+echo "  构建镜像: $PROGRAM:$VERSION"
+echo "  平台:     $PLATFORM"
+echo "  推送:     $PUSH"
+echo "================================================"
+
+cd ..  # 切换到项目根目录作为构建上下文
+
+# ---- 构建 ----
+BUILD_CMD="docker build --platform $PLATFORM"
+BUILD_CMD="$BUILD_CMD -t $PROGRAM:$VERSION"
+BUILD_CMD="$BUILD_CMD -t $PROGRAM:latest"
+BUILD_CMD="$BUILD_CMD --build-arg VERSION=$VERSION"
+BUILD_CMD="$BUILD_CMD --build-arg ENV=$ENV"
+BUILD_CMD="$BUILD_CMD --build-arg GOPROXY=$GOPROXY"
+BUILD_CMD="$BUILD_CMD --build-arg APT_MIRROR=$APT_MIRROR"
+[ "$NO_CACHE" = true ] && BUILD_CMD="$BUILD_CMD --no-cache"
+BUILD_CMD="$BUILD_CMD -f docker/Dockerfile ."
+
+eval $BUILD_CMD
+
+# ---- 推送 ----
+if [ "$PUSH" = true ]; then
+    echo "推送镜像到仓库..."
+    docker push "$PROGRAM:$VERSION"
+    docker push "$PROGRAM:latest"
+    echo "推送完成"
+fi
+
+echo "================================================"
+echo "  完成: $PROGRAM:$VERSION"
+echo "  本地测试: cd docker && docker-compose up -d"
+echo "  推送:    ./docker/build.sh --push"
+echo "================================================"

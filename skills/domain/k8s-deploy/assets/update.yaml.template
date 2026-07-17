@@ -1,0 +1,74 @@
+# ============================================================
+# {App Name} K8s 增量更新配置
+# 版本：{version} | 生成时间：{timestamp}
+# 用途：仅更新镜像版本，不影响 ConfigMap / Service / Ingress / Secret
+# 命令：kubectl apply -f docker/update.yaml
+# 注意：此文件仅含 Deployment，避免覆盖已有的其他资源配置
+# ============================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {app-name}
+  namespace: {namespace}
+spec:
+  replicas: {replicas}
+  selector:
+    matchLabels:
+      app: {app-name}
+  template:
+    metadata:
+      labels:
+        app: {app-name}
+        version: "{version}"     # 版本标签同步更新
+    spec:
+      containers:
+        - name: {app-name}
+          image: {registry}/{namespace}/{image-name}:{version}   # 唯一需要更新的字段
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              protocol: TCP
+              containerPort: {port}
+          env:
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {secret-name}
+                  key: {secret-key}
+            - name: ENV
+              value: "{env}"
+          resources:
+            limits:
+              cpu: "{cpu-limit}"
+              memory: "{memory-limit}"
+            requests:
+              cpu: "{cpu-request}"
+              memory: "{memory-request}"
+          volumeMounts:
+            - name: config-volume
+              mountPath: /opt/{app-name}/config
+            - name: tz-config
+              mountPath: /etc/localtime
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {port}
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {port}
+            initialDelaySeconds: 15
+            periodSeconds: 5
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {app-name}-cfg
+            items:
+              - key: key-{config-filename}
+                path: {config-filename}
+        - name: tz-config
+          hostPath:
+            path: /etc/localtime

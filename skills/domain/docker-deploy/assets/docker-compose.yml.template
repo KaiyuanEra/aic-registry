@@ -1,0 +1,48 @@
+services:
+  {app-name}:
+    image: ${PROGRAM:-{full-image-name}}:${VERSION:-{x.y.z}}
+    container_name: {app-name}
+    restart: unless-stopped
+    hostname: ${HOSTNAME}
+
+    volumes:
+      # 持久化数据目录（首次启动自动从镜像复制）
+      - {app-name}-data:/app/data
+      # 日志挂载点（根据实际路径修改）
+      - /data/logs:/app/data/logs
+      # 时区同步：只挂载 localtime，TZ 通过环境变量注入（/etc/timezone 在部分系统不存在或非文件，挂载会报错）
+      - /etc/localtime:/etc/localtime:ro
+
+    environment:
+      - ENV=${ENV:-prod}
+      - TZ=Asia/Shanghai
+      # 敏感变量通过 .env 文件或外部注入，不硬编码此处
+
+    ports:
+      - "{host-port}:{container-port}"
+
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:{port}/health >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+
+    deploy:
+      resources:
+        limits:
+          cpus: '{cpu-limit}'
+          memory: {memory-limit}
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+
+volumes:
+  {app-name}-data:
+    driver: local

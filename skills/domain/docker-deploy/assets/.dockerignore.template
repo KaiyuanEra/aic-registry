@@ -1,0 +1,29 @@
+# 版本控制
+.git/
+.gitignore
+
+# 开发工具
+.idea/
+.vscode/
+*.iml
+
+# 构建产物（根据语言按需保留）
+# target/      # Java - 如果在容器内编译则删除此行
+# vendor/      # Go   - 如果在容器内下载依赖则删除此行
+*.log
+*.tmp
+
+# 本地配置（不进入镜像）
+docker/
+.env
+*.env
+
+# 文档
+docs/
+*.md
+README*
+
+# 测试
+*_test.go
+test/
+tests/

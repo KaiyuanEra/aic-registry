@@ -1,0 +1,66 @@
+# ============================================================
+# {App Name} GitLab CI/CD 配置
+# 最后更新：{timestamp}
+# 文档：docs/ci-cd.md（如有）
+# ============================================================
+
+stages:
+  - build
+  # - test      # 预留：单元测试阶段
+  # - deploy    # 预留：自动部署阶段
+
+# ---- 全局变量（优先级低于 job 级别变量）----
+variables:
+  PLATFORM: "linux/amd64"
+  ENV: "prod"
+  VERSION: "{x.y.z}"                           # 版本号，与 docker/env.sh 保持同步
+  REGISTRY: "{registry}"                        # 镜像仓库地址
+  CI_REGISTRY_IMAGE: "{registry}/{ns}/{name}"  # 完整镜像名
+
+# ---- GitLab 内置变量说明 ----
+# CI_COMMIT_SHORT_SHA   : 当前提交的短 SHA（8位），用于唯一标识构建
+# CI_COMMIT_REF_NAME    : 当前分支名或 tag 名
+# CI_REGISTRY_USER      : GitLab 仓库登录用户（在 CI/CD Settings 中配置）
+# CI_REGISTRY_PASSWORD  : GitLab 仓库登录密码（在 CI/CD Settings 中配置）
+
+# ---- 自定义变量说明 ----
+# VERSION               : 应用版本号，需手动与 docker/env.sh 保持同步
+# REGISTRY              : 私有镜像仓库地址
+# CI_REGISTRY_IMAGE     : 完整镜像路径（含仓库地址和命名空间）
+# IMAGE_TAG             : 动态 tag，格式为 {分支名}-{短SHA}，确保每次构建唯一
+
+# ---- 构建 Job ----
+build:
+  stage: build
+  image: {registry}/paas/docker:24             # 含 Docker 客户端的构建镜像
+  services:
+    - {registry}/paas/docker:24               # Docker-in-Docker 服务
+  variables:
+    DOCKER_BUILDKIT: "0"                       # DinD 环境下关闭 BuildKit
+    IMAGE_TAG: "${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHORT_SHA}"  # 动态 tag
+  before_script:
+    - docker info
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $REGISTRY
+  script:
+    - echo "构建 Docker 镜像..."
+    - echo "分支=${CI_COMMIT_REF_NAME} SHA=${CI_COMMIT_SHORT_SHA}"
+    - |
+      docker build \
+        --platform $PLATFORM \
+        --build-arg VERSION=$VERSION \
+        --build-arg ENV=$ENV \
+        -t $CI_REGISTRY_IMAGE:$VERSION \
+        -t $CI_REGISTRY_IMAGE:latest \
+        -t $CI_REGISTRY_IMAGE:$IMAGE_TAG \
+        -f docker/Dockerfile .
+    - echo "推送镜像..."
+    - docker push $CI_REGISTRY_IMAGE:$VERSION
+    - docker push $CI_REGISTRY_IMAGE:latest
+    - docker push $CI_REGISTRY_IMAGE:$IMAGE_TAG
+    - echo "完成 -> $CI_REGISTRY_IMAGE:$VERSION"
+  only:
+    - main
+    - dev
+    - merge_requests
+  tags:
+    - docker
