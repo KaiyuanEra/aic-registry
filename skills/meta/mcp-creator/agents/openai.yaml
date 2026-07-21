@@ -1,0 +1,4 @@
+interface:
+  display_name: "MCP Creator"
+  short_description: "Create validated MCP server registry packages"
+  default_prompt: "Use $mcp-creator to create or update a validated MCP server registry package."

@@ -6,7 +6,7 @@ import sys
 
 
 REGISTRY_DESCRIPTION = (
-    "Private aic registry for skills, contexts, permissions, and local ignore rules."
+    "Private aic registry for skills, contexts, MCP servers, permissions, and local ignore rules."
 )
 
 
@@ -32,6 +32,9 @@ def main() -> int:
 
     write_frontmatter_index(root, version, "skills", "SKILL.md", "skills")
     write_frontmatter_index(root, version, "contexts", "CONTEXT.md", "contexts")
+    write_frontmatter_index(
+        root, version, "mcp-servers", "MCP-SERVER.md", "mcp_servers"
+    )
     write_frontmatter_index(root, version, "permissions", "PERMISSION.md", "permissions")
     write_gitignore_index(root, version)
     return 0
