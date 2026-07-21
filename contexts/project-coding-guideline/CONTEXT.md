@@ -5,7 +5,7 @@ description: Default AI coding guideline injected into project context files.
 targets:
   - CLAUDE.md
   - AGENTS.md
-  - Agents.md
+  - GEMINI.md
 content: content.md
 env-required: true
 env-vars:
