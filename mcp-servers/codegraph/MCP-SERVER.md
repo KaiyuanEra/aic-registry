@@ -1,5 +1,5 @@
 ---
-name: codegraph-mcp
+name: codegraph
 version: 1.0.0
 description: CodeGraph repository analysis MCP server for project-scoped aic installation.
 transport: stdio
