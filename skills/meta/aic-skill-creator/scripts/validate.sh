@@ -56,7 +56,7 @@ else
 
   # name 与目录名一致性检查
   if [[ "$FM_NAME" != "$SKILL_DIR_NAME" ]]; then
-    fail "name 字段（$FM_NAME）与目录名（$SKILL_DIR_NAME）不一致，必须完全匹配"
+    fail "name 字段（${FM_NAME}）与目录名（${SKILL_DIR_NAME}）不一致，必须完全匹配"
   else
     pass "name 与目录名一致"
   fi
@@ -69,9 +69,9 @@ else
   FM_VER="$(echo "$FRONTMATTER" | grep "^version:" | head -1 | sed 's/version:[[:space:]]*//')"
   # 简单校验 semver 格式 MAJOR.MINOR.PATCH
   if echo "$FM_VER" | grep -qE "^[0-9]+\.[0-9]+\.[0-9]+$"; then
-    pass "version: $FM_VER（格式正确）"
+    pass "version: ${FM_VER}（格式正确）"
   else
-    fail "version 格式不合法（期望 MAJOR.MINOR.PATCH，实际：$FM_VER）"
+    fail "version 格式不合法（期望 MAJOR.MINOR.PATCH，实际：${FM_VER}）"
   fi
 fi
 
@@ -94,6 +94,24 @@ echo ""
 echo "[3] env-required 规范"
 
 ENV_REQUIRED="$(echo "$FRONTMATTER" | grep "^env-required:" | head -1 | sed 's/env-required:[[:space:]]*//')"
+ENV_VAR_NAMES="$(echo "$FRONTMATTER" | sed -n 's/^[[:space:]]*-[[:space:]]*name:[[:space:]]*//p')"
+
+if [[ -n "$ENV_VAR_NAMES" ]]; then
+  while IFS= read -r var_name; do
+    if echo "$var_name" | grep -qE '^[A-Z][A-Z0-9_]*$'; then
+      pass "变量名 $var_name 符合 ^[A-Z][A-Z0-9_]*$"
+    else
+      fail "变量名 $var_name 不合法；必须匹配 ^[A-Z][A-Z0-9_]*$"
+    fi
+  done <<< "$ENV_VAR_NAMES"
+
+  DUPLICATE_ENV_VARS="$(echo "$ENV_VAR_NAMES" | sort | uniq -d)"
+  if [[ -n "$DUPLICATE_ENV_VARS" ]]; then
+    fail "env-vars 中存在重复变量名：$(echo "$DUPLICATE_ENV_VARS" | tr '\n' ' ')"
+  else
+    pass "env-vars 中无重复变量名"
+  fi
+fi
 
 if [[ "$ENV_REQUIRED" == "true" ]]; then
   pass "env-required: true"
@@ -107,11 +125,11 @@ if [[ "$ENV_REQUIRED" == "true" ]]; then
 
   # 正文中的占位符必须在 env-vars 中声明
   BODY="$(awk 'BEGIN{found=0} /^---/{found++; next} found>=2{print}' "$TARGET")"
-  PLACEHOLDERS="$(echo "$BODY" | grep -oE '\{\{[A-Z_]+\}\}' | sort -u || true)"
+  PLACEHOLDERS="$(echo "$BODY" | grep -oE '\{\{[A-Z][A-Z0-9_]*\}\}' | sort -u || true)"
   if [[ -n "$PLACEHOLDERS" ]]; then
     while IFS= read -r ph; do
       VAR_NAME="${ph//[\{\}]/}"
-      if echo "$FRONTMATTER" | grep -q "name: $VAR_NAME"; then
+      if echo "$ENV_VAR_NAMES" | grep -qx "$VAR_NAME"; then
         pass "占位符 $ph 已在 env-vars 中声明"
       else
         fail "占位符 $ph 在正文中使用但未在 env-vars 中声明"
@@ -131,7 +149,7 @@ if [[ "$ENV_REQUIRED" == "true" ]]; then
 elif [[ "$ENV_REQUIRED" == "false" ]] || [[ -z "$ENV_REQUIRED" ]]; then
   pass "env-required: false（标准 skill，无需环境变量）"
 else
-  fail "env-required 字段值不合法（期望 true 或 false，实际：$ENV_REQUIRED）"
+  fail "env-required 字段值不合法（期望 true 或 false，实际：${ENV_REQUIRED}）"
 fi
 
 # ── 4. 正文长度检查 ───────────────────────────────────────

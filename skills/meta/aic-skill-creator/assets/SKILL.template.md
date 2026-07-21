@@ -30,6 +30,7 @@ tags: [<tag1>, <tag2>]       # 用于 aic list 过滤，2–4 个标签
 env-required: false
 
 # env-required: true 时取消注释并填写：
+# 变量名必须匹配 ^[A-Z][A-Z0-9_]*$，区分大小写，同一 env-vars 中不得重复
 # env-required: true
 # env-vars:
 #   - name: DB_HOST

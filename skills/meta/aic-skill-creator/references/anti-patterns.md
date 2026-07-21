@@ -106,6 +106,38 @@ env-vars:
 
 ---
 
+## AP-04B：变量名格式错误或重复
+
+**错误**
+```yaml
+env-vars:
+  - name: api_key
+    description: API key
+    required: true
+    target: skill
+  - name: API-KEY
+    description: Duplicate API key alias
+    required: true
+    target: skill
+  - name: api_key
+    description: Repeated variable
+    required: true
+    target: skill
+```
+
+**问题：** 变量名必须匹配 `^[A-Z][A-Z0-9_]*$`，区分大小写，且同一声明中不得重复。
+
+**修正**
+```yaml
+env-vars:
+  - name: API_KEY
+    description: API key
+    required: true
+    target: skill
+```
+
+---
+
 ## AP-05：正文中写入真实的敏感值
 
 **错误**

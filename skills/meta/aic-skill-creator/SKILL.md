@@ -1,6 +1,6 @@
 ---
 name: aic-skill-creator
-version: 2.0.1
+version: 2.1.0
 description: >
   编写、设计、改进 aic 内部 SKILL.md 文件。
   Use when 创建新 skill、从零写 SKILL.md、优化 skill 的 description 触发质量、
@@ -23,6 +23,7 @@ env-required: false
 1. **description 是唯一触发机制** — Claude Code 不用正则或分类器，只把所有 skill 的 `name + description` 聚合成 meta-tool 传给 agent。描述写差了，skill 永远不会被触发。
 2. **Progressive Disclosure** — SKILL.md 是「作弊单」，不是完整文档。重细节放 `references/`，按需加载。
 3. **aic 约束** — 所有 skill 必须有 `version`（语义化）；需要本地配置时声明 `env-required: true` 和 `env-vars`，绝不写真实值。
+4. **变量名是硬约束** — Skill 与 Context 统一使用 `^[A-Z][A-Z0-9_]*$`；变量名区分大小写，禁止小写字母、连字符、点号、空格、数字或下划线开头，同一声明中不得重复。
 
 ---
 
@@ -78,6 +79,8 @@ env-required: false          # 若需要注入本地变量则改为 true
 #     target: skill
 ---
 ```
+
+**变量名必须匹配 `^[A-Z][A-Z0-9_]*$`。** 合法：`API_KEY`、`API_BASE_URL`、`AIC_AVAILABLE_CLI_TOOLS`、`MODEL_V2_ENDPOINT`。非法：`api_key`、`2FA_TOKEN`、`API-KEY`、`API.KEY`、`_API_KEY`。同一 `env-vars` 中不得重复，且名称区分大小写。完整规则见 [aic 特有规范](references/skm-spec.md)。
 
 ---
 

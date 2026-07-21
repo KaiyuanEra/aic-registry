@@ -2,7 +2,7 @@
 registry_version: "v0.1.0"
 skills:
     - name: "aic-skill-creator"
-      version: "2.0.1"
+      version: "2.1.0"
       description: "编写、设计、改进 aic 内部 SKILL.md 文件。 Use when 创建新 skill、从零写 SKILL.md、优化 skill 的 description 触发质量、 设计 skill 目录结构，or when user mentions 写 skill、skill 怎么写、 description 不触发、skill 放哪个目录、env-required 怎么配、适配层怎么加。 Do NOT use for aic install/remove/sync 命令、管理已安装的 skill， 或编写与 skill 无关的业务代码文档。"
       tags:
         - "aic"
@@ -30,6 +30,14 @@ skills:
         - "database"
         - "ddl"
       path: "skills/domain/clickhouse-table-creator"
+    - name: "contexts-creator"
+      version: "1.5.0"
+      description: "为 context registry 创建、迁移和增量更新按开发阶段设计的项目级长期记忆 context 包， 产出并校验 contexts/<context-name>/CONTEXT.md 与 content.md，递增版本并同步 contexts/index.yaml。 Use when 用户要求编写或规范 CLAUDE.md、AGENTS.md、Agents.md、项目记忆文件、项目上下文， 将旧记忆迁移成 registry context，切换孵化/迭代/维护/重构阶段规范，或创建类似 contexts/project-coding-guideline 的工程。 Do NOT use for 普通业务文档、一次性会话提示词、 skill 编写，或修改 context registry 之外的工具实现。"
+      tags:
+        - "context-authoring"
+        - "meta"
+        - "project-memory"
+      path: "skills/meta/contexts-creator"
     - name: "dev-plan"
       version: "2.0.3"
       description: "生成或增量更新项目开发计划文档 dev-plan.md，拆分 Phase/Task 结构，支持 Phase 级归档与文档长度管理。 Use when writing a development plan, breaking down a PRD into tasks, updating an existing plan, archiving completed phases, or when user mentions 制定开发计划、拆分任务、更新计划、项目规划、需求拆分、 技术方案、任务列表、Phase 划分、dev-plan、PRD、里程碑规划、归档 Phase、精简计划。 Do NOT use for 创建 GitLab Issue 或 Milestone（使用 glab-manage skill）， git commit 操作（使用 git-commit skill），或纯粹的技术实现问题。"

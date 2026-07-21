@@ -1,0 +1,4 @@
+interface:
+  display_name: "Contexts Creator"
+  short_description: "Create staged project memory context packages"
+  default_prompt: "Use $contexts-creator to create or update a registry context package for the current development stage."

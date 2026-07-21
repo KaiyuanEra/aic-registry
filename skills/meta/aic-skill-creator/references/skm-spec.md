@@ -83,10 +83,45 @@ env-vars:
 
 `env-vars` 中声明的变量，必须在 `SKILL.md` 正文、reference 或脚本说明中明确其用途、读取来源和缺失时的处理方式。
 
+### 变量名硬性规则
+
+Skill 与 Context 使用完全相同的变量名规则：
+
+```text
+^[A-Z][A-Z0-9_]*$
+```
+
+- 必须以大写字母开头。
+- 后续只能使用大写字母、数字和下划线。
+- 区分大小写。
+- 不允许小写字母、连字符、点号或空格。
+- 不允许数字或下划线开头。
+- 同一 `env-vars` 声明中不得重复。
+
+合法示例：
+
+```text
+API_KEY
+API_BASE_URL
+AIC_AVAILABLE_CLI_TOOLS
+MODEL_V2_ENDPOINT
+```
+
+非法示例：
+
+```text
+api_key
+2FA_TOKEN
+API-KEY
+API.KEY
+_API_KEY
+```
+
 ### env-required skill 的测试注意事项
 
 `scripts/validate.sh` 至少应检查：
 - `env-required: true` 时 `env-vars` 字段不能为空
+- 所有变量名符合 `^[A-Z][A-Z0-9_]*$`，且不存在重复声明
 - 缺失变量时要求停止并提示用户补齐
 - 任何 `.md` 文件中**不应出现**疑似真实 IP、密码、token 的硬编码字符串
 
