@@ -1,5 +1,5 @@
 ---
-name: contexts-creator
+name: aic-contexts-creator
 version: 1.5.0
 description: >
   为 context registry 创建、迁移和增量更新按开发阶段设计的项目级长期记忆 context 包，

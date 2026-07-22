@@ -50,6 +50,19 @@ Skill 在这套理论中的定位是“将不确定推理转成确定流程”�
 - `skills/`：公司内部 Skill 唯一来源（统一版本、统一索引、统一规范）
 - `aic/`：本机工具，负责安装、同步、软链接分发、环境变量渲染、TUI 管理
 
+### Registry 与 aic 版本
+
+- 根目录 `VERSION` 是 registry 自身版本，用于标识 registry 内容的发布状态。
+- 根目录 `AIC_VERSION` 是此 registry 要求的 aic 版本；生成时会写入 `registry.yaml` 的 `aic_version` 字段。
+- aic 拉取 registry 后应将自身版本与 `aic_version` 精确比较：不一致时提示用户升级或切换到对应版本，再继续安装或同步。
+
+维护命令：
+
+```bash
+make set-version VERSION=v0.2.0
+make set-aic-version AIC_VERSION=v1.0.3
+```
+
 ## 2. 目前集成的 Skills
 
 当前注册表（`skills/index.yaml`）已集成以下技能：

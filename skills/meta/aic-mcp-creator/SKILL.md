@@ -1,5 +1,5 @@
 ---
-name: mcp-creator
+name: aic-mcp-creator
 version: 1.0.0
 description: >
   为 aic registry 创建、审查和增量更新结构化 MCP server 包，生成并校验
@@ -12,7 +12,6 @@ description: >
 tags: [mcp, meta, registry-authoring]
 env-required: false
 ---
-
 # MCP Creator
 
 创建一个可版本化的 MCP 源定义。一个 MCP 包只有一个 `MCP-SERVER.md`；YAML frontmatter 是配置的唯一数据源，正文只写人类可读说明。

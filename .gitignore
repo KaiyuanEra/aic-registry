@@ -68,3 +68,10 @@ aic/dist/
 
 .agents/
 /.codegraph/
+
+.codegraph/
+.crush/
+.tem/
+/CLAUDE.md
+/AGENT.md
+/GEMINI.md

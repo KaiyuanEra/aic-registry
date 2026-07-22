@@ -1,4 +1,5 @@
 name: "aic-skills"
 version: "v0.1.0"
+aic_version: "v1.0.2"
 schema: "v1"
 description: "Private aic registry for skills, contexts, MCP servers, permissions, and local ignore rules."
