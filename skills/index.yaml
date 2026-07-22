@@ -30,7 +30,7 @@ skills:
         - "database"
         - "ddl"
       path: "skills/domain/clickhouse-table-creator"
-    - name: "contexts-creator"
+    - name: "aic-contexts-creator"
       version: "1.5.0"
       description: "为 context registry 创建、迁移和增量更新按开发阶段设计的项目级长期记忆 context 包， 产出并校验 contexts/<context-name>/CONTEXT.md 与 content.md，递增版本并同步 contexts/index.yaml。 Use when 用户要求编写或规范 CLAUDE.md、AGENTS.md、Agents.md、项目记忆文件、项目上下文， 将旧记忆迁移成 registry context，切换孵化/迭代/维护/重构阶段规范，或创建类似 contexts/project-coding-guideline 的工程。 Do NOT use for 普通业务文档、一次性会话提示词、 skill 编写，或修改 context registry 之外的工具实现。"
       tags:
