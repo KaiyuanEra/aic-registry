@@ -10,7 +10,9 @@
 .aic/*
 !.aic/
 !.aic/.aicrc
-.tem/
+/.tmp/
 /CLAUDE.md
 /AGENT.md
 /GEMINI.md
+/opencode.json
+/.mcp.json
