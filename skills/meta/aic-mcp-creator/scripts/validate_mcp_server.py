@@ -199,7 +199,7 @@ class Validator:
 
         self.require_nonempty_string(meta, "url")
         url = meta.get("url")
-        if isinstance(url, str):
+        if isinstance(url, str) and PLACEHOLDER_RE.fullmatch(url) is None:
             normalized_url = PLACEHOLDER_RE.sub("placeholder", url)
             parsed = urlparse(normalized_url)
             if parsed.scheme not in {"http", "https"} or not parsed.netloc:

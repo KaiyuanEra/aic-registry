@@ -70,6 +70,19 @@ env-required: false
 Provides issue lookup and update tools.
 """
 
+HTTP_VARIABLE = HTTP.replace(
+    "url: https://mcp.example.com/mcp",
+    'url: "{{ aic.env.MCP_URL }}"',
+).replace(
+    "env-required: false",
+    """env-required: true
+env-vars:
+  - name: MCP_URL
+    description: Complete Streamable HTTP MCP endpoint URL.
+    required: true
+    target: mcp""",
+)
+
 
 def run_case(name: str, document: str, should_pass: bool) -> None:
     with tempfile.TemporaryDirectory(prefix="mcp-creator-test-") as temp:
@@ -113,6 +126,7 @@ def main() -> None:
         ("codegraph", STDIO, True),
         ("legacy-events", SSE, True),
         ("issue-tracker", HTTP, True),
+        ("issue-tracker", HTTP_VARIABLE, True),
         ("legacy-events", SSE.replace("[claude, gemini]", "[claude, codex]"), False),
         ("issue-tracker", HTTP.replace("url:", "command: server\nurl:"), False),
         ("legacy-events", SSE.replace("MCP_TOKEN", "api_key"), False),

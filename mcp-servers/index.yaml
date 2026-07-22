@@ -8,3 +8,11 @@ mcp_servers:
         - "code-analysis"
         - "repository"
       path: "mcp-servers/codegraph"
+    - name: "searxng-http"
+      version: "1.0.0"
+      description: "基于 SearXNG 的网络搜索 MCP 服务，通过 Streamable HTTP 提供连接。"
+      tags:
+        - "search"
+        - "searxng"
+        - "streamable-http"
+      path: "mcp-servers/searxng-http"
