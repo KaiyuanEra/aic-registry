@@ -75,3 +75,7 @@ aic/dist/
 /CLAUDE.md
 /AGENT.md
 /GEMINI.md
+
+/.tmp/
+/opencode.json
+/.mcp.json
