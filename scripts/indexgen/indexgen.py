@@ -14,7 +14,6 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Generate aic-skills registry indexes.")
     parser.add_argument("--repo-root", default=".", help="repository root path")
     parser.add_argument("--registry-version", default="v0.1.0", help="registry version")
-    parser.add_argument("--aic-version", default="v1.0.0", help="required aic version")
     parser.add_argument(
         "--metadata-only",
         action="store_true",
@@ -24,13 +23,12 @@ def main() -> int:
 
     root = Path(args.repo_root).resolve()
     version = args.registry_version.strip()
-    aic_version = args.aic_version.strip()
     if not version:
         raise SystemExit("registry version cannot be empty")
-    if not aic_version:
-        raise SystemExit("aic version cannot be empty")
+    if not (root / "aic-release.yaml").is_file():
+        raise SystemExit("missing aic-release.yaml")
 
-    write_registry_metadata(root, version, aic_version)
+    write_registry_metadata(root, version)
     if args.metadata_only:
         return 0
 
@@ -44,12 +42,12 @@ def main() -> int:
     return 0
 
 
-def write_registry_metadata(root: Path, version: str, aic_version: str) -> None:
+def write_registry_metadata(root: Path, version: str) -> None:
     content = "\n".join(
         [
             f"name: {q('aic-skills')}",
             f"version: {q(version)}",
-            f"aic_version: {q(aic_version)}",
+            f"aic_release: {q('aic-release.yaml')}",
             f"schema: {q('v1')}",
             f"description: {q(REGISTRY_DESCRIPTION)}",
             "",

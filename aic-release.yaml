@@ -1,0 +1,4 @@
+version: "v1.0.2"
+md5: ""
+features:
+  - "增加 aic 与 registry 版本一致性检测"
