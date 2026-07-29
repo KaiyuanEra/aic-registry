@@ -29,6 +29,27 @@ env-required: false
 Provides repository graph analysis through MCP.
 """
 
+STDIO_PLATFORM = """
+---
+name: codegraph
+version: 1.1.0
+description: CodeGraph repository analysis MCP server.
+transport: stdio
+targets: [claude, codex, gemini, opencode]
+command: codegraph
+args: [serve, --mcp]
+platforms:
+  windows:
+    command: codegraph.exe
+    args: [serve, --mcp]
+env-required: false
+---
+
+# CodeGraph MCP
+
+Provides repository graph analysis through MCP.
+"""
+
 SSE = """
 ---
 name: legacy-events
@@ -124,6 +145,7 @@ def run_case(name: str, document: str, should_pass: bool) -> None:
 def main() -> None:
     cases = [
         ("codegraph", STDIO, True),
+        ("codegraph", STDIO_PLATFORM, True),
         ("legacy-events", SSE, True),
         ("issue-tracker", HTTP, True),
         ("issue-tracker", HTTP_VARIABLE, True),
@@ -131,6 +153,9 @@ def main() -> None:
         ("issue-tracker", HTTP.replace("url:", "command: server\nurl:"), False),
         ("legacy-events", SSE.replace("MCP_TOKEN", "api_key"), False),
         ("codegraph", STDIO.replace("env-required: false", "timeout: 0s\nenv-required: false"), False),
+        ("codegraph", STDIO_PLATFORM.replace("windows:", "freebsd:"), False),
+        ("codegraph", STDIO_PLATFORM.replace("command: codegraph.exe", "shell: powershell"), False),
+        ("codegraph", STDIO_PLATFORM.replace("args: [serve, --mcp]", "args: serve", 1), False),
     ]
     for name, document, should_pass in cases:
         run_case(name, document, should_pass)

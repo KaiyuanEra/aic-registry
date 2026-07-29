@@ -1,6 +1,6 @@
 ---
 name: aic-mcp-creator
-version: 1.0.0
+version: 1.1.0
 description: >
   为 aic registry 创建、审查和增量更新结构化 MCP server 包，生成并校验
   mcp-servers/<name>/MCP-SERVER.md，处理 stdio、SSE 和 Streamable HTTP transport、
@@ -29,11 +29,12 @@ env-required: false
 2. 只声明一个 `transport`：`stdio`、`sse` 或 `streamable-http`。严格应用对应字段的必填、允许和禁止规则。
 3. `targets` 只使用 `claude`、`codex`、`gemini`、`opencode`，不得重复。写文件前按能力矩阵拒绝不支持的组合；绝不在 SSE 与 Streamable HTTP 之间自动转换。
 4. 把结构化配置全部放进 frontmatter。正文至少写清用途和必要的运行前提，但不得作为 adapter 输入，也不得重复维护可执行配置。
-5. 对变量使用 `{{ aic.env.NAME }}`，只允许出现在 `command`、`args`、`cwd`、`env`、`url`、`headers` 的字符串值中。变量必须在 `env-vars` 声明，名称匹配 `^[A-Z][A-Z0-9_]*$`、区分大小写、不得重复，且 `target` 固定为 `mcp`。
-6. 变量替换的语义是“先解析 YAML，再替换允许字段的字符串值”。不得建议或生成先替换原始 YAML 再解析的流程。
-7. 新包从 `1.0.0` 开始。修改已发布包的正文或任一 frontmatter 字段时必须递增版本：小修升 PATCH，向后兼容的能力扩展升 MINOR，不兼容契约变化升 MAJOR。
-8. 默认产物不得包含 TODO、空白占位符或“待用户确认”。信息不足且会影响运行配置时先询问用户；非必要信息直接省略。只有用户明确要求脚手架时才允许保留占位符。
-9. 修改已有包时只做局部编辑，保留未涉及字段和正文。用户明确要求直接修改时即可落盘，否则先说明将改变的字段。
+5. 创建或修改 `stdio` MCP 时，若不能从用户输入或官方分发说明中确定 Windows 启动命令，必须询问用户是否需要 Windows 适配；需要时索要明确的 `platforms.windows.command` 和 `platforms.windows.args`。不得猜测 `npx.cmd`、`.exe`、`cmd /c`、PowerShell 或 shell 包装。
+6. 对变量使用 `{{ aic.env.NAME }}`，只允许出现在 `command`、`args`、`cwd`、`env`、`url`、`headers`、`platforms.<goos>.command`、`platforms.<goos>.args` 的字符串值中。变量必须在 `env-vars` 声明，名称匹配 `^[A-Z][A-Z0-9_]*$`、区分大小写、不得重复，且 `target` 固定为 `mcp`。
+7. 变量替换的语义是“先解析 YAML，再替换允许字段的字符串值”。不得建议或生成先替换原始 YAML 再解析的流程。
+8. 新包从 `1.0.0` 开始。修改已发布包的正文或任一 frontmatter 字段时必须递增版本：小修升 PATCH，向后兼容的能力扩展升 MINOR，不兼容契约变化升 MAJOR。
+9. 默认产物不得包含 TODO、空白占位符或“待用户确认”。信息不足且会影响运行配置时先询问用户；非必要信息直接省略。只有用户明确要求脚手架时才允许保留占位符。
+10. 修改已有包时只做局部编辑，保留未涉及字段和正文。用户明确要求直接修改时即可落盘，否则先说明将改变的字段。
 
 ## 刷新与验证
 
@@ -41,7 +42,7 @@ env-required: false
 
 ```bash
 make index
-python3 skills/meta/mcp-creator/scripts/validate_mcp_server.py . <name>
+python3 skills/meta/aic-mcp-creator/scripts/validate_mcp_server.py . <name>
 make validate
 git diff -- mcp-servers/<name> mcp-servers/index.yaml skills/index.yaml
 ```

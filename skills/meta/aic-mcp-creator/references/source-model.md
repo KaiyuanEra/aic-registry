@@ -24,6 +24,7 @@ mcp-servers/<name>/
 | `env-vars` | 条件必填 | 变量声明列表，`target` 固定为 `mcp` |
 | `tags` | 否 | 用于 registry 检索的字符串列表 |
 | `timeout` | 否 | 正数 Go duration，例如 `5s`、`30s`、`2m` |
+| `platforms` | 否 | 仅 `stdio` 可用，按 GOOS 覆盖当前平台的 `command` / `args` |
 
 未知字段必须报错，避免拼写错误被静默忽略。
 
@@ -31,7 +32,7 @@ mcp-servers/<name>/
 
 | transport | 必填 | 可选 | 禁止 |
 |---|---|---|---|
-| `stdio` | `command` | `args`、`cwd`、`env`、`timeout` | `url`、`headers` |
+| `stdio` | `command` | `args`、`cwd`、`env`、`timeout`、`platforms` | `url`、`headers` |
 | `sse` | `url` | `headers`、`timeout` | `command`、`args`、`cwd`、`env` |
 | `streamable-http` | `url` | `headers`、`timeout` | `command`、`args`、`cwd`、`env` |
 
@@ -43,6 +44,32 @@ mcp-servers/<name>/
 - `url` 必须使用 `http` 或 `https` scheme。
 - `timeout` 表达源模型中的超时，由 adapter 转换为目标客户端使用的单位；不要在源文件中预先写成秒数或毫秒数。
 
+## STDIO 平台覆盖
+
+`stdio` MCP 可以声明平台差异：
+
+```yaml
+command: codegraph
+args:
+  - serve
+  - --mcp
+platforms:
+  windows:
+    command: codegraph.exe
+    args:
+      - serve
+      - --mcp
+```
+
+语义：
+
+- 顶层 `command` / `args` 是默认配置，适用于 Linux/macOS，也作为 fallback。
+- `platforms.<GOOS>.command` / `args` 只覆盖当前平台；未命中时使用顶层配置。
+- 初期允许 `windows`、`linux`、`darwin`，registry 不要求每个平台都声明。
+- 只支持 `command` 和 `args`，不得在 `platforms` 下声明 `shell`、`shell_args`、`cwd`、`env` 或客户端专属字段。
+- `args` 是整体替换；`args: []` 表示当前平台无参数，未写 `args` 才 fallback 顶层。
+- 不自动补 `.exe` / `.cmd`，不自动 shell wrap，不做路径转换。Windows 启动语义必须来自 MCP server 分发者或用户明确提供。
+
 ## 解析和渲染边界
 
 正确顺序是：
@@ -51,6 +78,7 @@ mcp-servers/<name>/
 解析 YAML frontmatter
   -> 构造 transport 判别联合类型
   -> 校验 transport 专属字段
+  -> 对 stdio 选择当前平台 command/args 覆盖
   -> 解析并校验变量
   -> 校验 targets 能力
   -> 所有 adapter 生成成功

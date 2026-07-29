@@ -45,7 +45,7 @@ COMMON_FIELDS = {
     "timeout",
 }
 TRANSPORT_FIELDS = {
-    "stdio": {"command", "args", "cwd", "env"},
+    "stdio": {"command", "args", "cwd", "env", "platforms"},
     "sse": {"url", "headers"},
     "streamable-http": {"url", "headers"},
 }
@@ -55,6 +55,8 @@ REQUIRED_FIELDS = {
     "streamable-http": {"url"},
 }
 VARIABLE_ROOTS = {"command", "args", "cwd", "env", "url", "headers"}
+SUPPORTED_PLATFORMS = {"windows", "linux", "darwin"}
+PLATFORM_FIELDS = {"command", "args"}
 
 
 class UniqueKeyLoader(yaml.SafeLoader):
@@ -195,6 +197,8 @@ class Validator:
                 self.require_nonempty_string(meta, "cwd")
             if "env" in meta:
                 self.require_string_map(meta["env"], "env")
+            if "platforms" in meta:
+                self.validate_platforms(meta["platforms"])
             return
 
         self.require_nonempty_string(meta, "url")
@@ -247,8 +251,7 @@ class Validator:
             placeholders = list(ANY_PLACEHOLDER_RE.finditer(value))
             if not placeholders:
                 continue
-            root = str(path[0]) if path else ""
-            if root not in VARIABLE_ROOTS:
+            if not is_variable_path_allowed(path):
                 self.fail(f"placeholders are not allowed in {format_path(path)}")
                 continue
             for match in placeholders:
@@ -300,6 +303,30 @@ class Validator:
         if "default" in declaration and not isinstance(declaration["default"], str):
             self.fail(f"{label}.default must be a string")
         return name
+
+    def validate_platforms(self, platforms: object) -> None:
+        if not isinstance(platforms, dict) or not platforms:
+            self.fail("platforms must be a non-empty mapping")
+            return
+        unknown_platforms = sorted(set(platforms) - SUPPORTED_PLATFORMS)
+        if unknown_platforms:
+            self.fail(f"unsupported platforms: {', '.join(unknown_platforms)}")
+        for platform, override in platforms.items():
+            label = f"platforms.{platform}"
+            if not isinstance(override, dict) or not override:
+                self.fail(f"{label} must be a non-empty mapping")
+                continue
+            unknown = sorted(set(override) - PLATFORM_FIELDS)
+            if unknown:
+                self.fail(f"{label} has unknown fields: {', '.join(unknown)}")
+            if not any(field in override for field in PLATFORM_FIELDS):
+                self.fail(f"{label} must include command or args")
+            if "command" in override:
+                command = override["command"]
+                if not isinstance(command, str) or not command.strip():
+                    self.fail(f"{label}.command must be a non-empty string")
+            if "args" in override:
+                self.require_string_list(override["args"], f"{label}.args", allow_empty=True)
 
     def validate_body(self, body: str) -> None:
         if not body:
@@ -415,6 +442,23 @@ def walk_strings(value: object, path: tuple[object, ...] = ()):
     elif isinstance(value, list):
         for index, item in enumerate(value):
             yield from walk_strings(item, path + (index,))
+
+
+def is_variable_path_allowed(path: tuple[object, ...]) -> bool:
+    if not path:
+        return False
+    root = str(path[0])
+    if root in VARIABLE_ROOTS:
+        return True
+    if (
+        len(path) >= 3
+        and path[0] == "platforms"
+        and isinstance(path[1], str)
+        and path[1] in SUPPORTED_PLATFORMS
+        and path[2] in PLATFORM_FIELDS
+    ):
+        return path[2] == "command" or len(path) >= 4
+    return False
 
 
 def format_path(path: tuple[object, ...]) -> str:

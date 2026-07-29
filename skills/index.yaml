@@ -10,7 +10,7 @@ skills:
         - "project-memory"
       path: "skills/meta/aic-contexts-creator"
     - name: "aic-mcp-creator"
-      version: "1.0.0"
+      version: "1.1.0"
       description: "为 aic registry 创建、审查和增量更新结构化 MCP server 包，生成并校验 mcp-servers/<name>/MCP-SERVER.md，处理 stdio、SSE 和 Streamable HTTP transport、 环境变量占位符、目标客户端能力、版本递增及 mcp-servers/index.yaml。 Use when 用户要求新增 MCP server 定义、编写 MCP-SERVER.md、把 MCP 配置收录进 registry、 修改已有 MCP 源模型，或检查 MCP transport 与 Claude/Codex/Gemini/OpenCode 的兼容性。 Do NOT use for 实现 aic 客户端 parser/adapter、直接改写 IDE 原生 MCP 配置、启动 MCP server， 或编写普通 Skill、Context 和一次性 MCP 使用说明。"
       tags:
         - "mcp"

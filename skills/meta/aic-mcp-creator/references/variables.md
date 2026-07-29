@@ -41,6 +41,8 @@ env-vars:
 - `env` 的值
 - `url`
 - `headers` 的值
+- `platforms.<goos>.command`
+- `platforms.<goos>.args` 的元素
 
 不允许在键名、`name`、`version`、`description`、`transport`、`targets`、`timeout`、变量声明或 Markdown 正文中引用。
 

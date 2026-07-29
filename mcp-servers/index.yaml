@@ -2,7 +2,7 @@
 registry_version: "v0.1.0"
 mcp_servers:
     - name: "codegraph"
-      version: "1.0.0"
+      version: "1.1.0"
       description: "CodeGraph repository analysis MCP server for project-scoped aic installation."
       tags:
         - "code-analysis"

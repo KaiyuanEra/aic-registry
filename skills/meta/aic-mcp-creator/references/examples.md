@@ -17,6 +17,12 @@ command: codegraph
 args:
   - serve
   - --mcp
+platforms:
+  windows:
+    command: codegraph.exe
+    args:
+      - serve
+      - --mcp
 env-required: false
 ---
 
@@ -24,6 +30,8 @@ env-required: false
 
 Provides repository graph analysis through MCP.
 ```
+
+为 `stdio` MCP 生成模板时，如果 Windows 启动方式无法从用户输入或官方分发说明中确认，应先询问用户是否需要 Windows 适配，并索要明确的 `command` / `args`。不要自动推断 `.exe`、`.cmd`、`cmd /c`、PowerShell 或 shell 包装。
 
 ## SSE
 
