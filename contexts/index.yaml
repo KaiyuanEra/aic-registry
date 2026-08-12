@@ -18,6 +18,6 @@ contexts:
       description: "重构与演进期项目使用的中文项目级长期记忆，强调新旧架构边界、迁移验证和临时规则失效条件。"
       path: "contexts/04-refactor-evolution"
     - name: "project-coding-guideline"
-      version: "1.0.1"
-      description: "Default AI coding guideline injected into project context files."
+      version: "1.0.2"
+      description: "默认注入到项目 context 文件的 AI 编码行为准则中文模板。Use when 项目需要默认的 AI 编码行为规范，或用户提及 默认编码准则、AI 编码行为、项目级编码规范、AGENTS.md 默认内容、CLAUDE.md 默认内容。"
       path: "contexts/project-coding-guideline"

@@ -53,27 +53,37 @@ fi
 
 # ── 检查项 2：包含 "Use when" 触发场景（25分）─────────────
 if echo "$DESCRIPTION" | grep -qi "use when"; then
-  SCORE=$((SCORE + 25))
-  DETAIL+=("  ✓  [+25] 包含 'Use when' 触发场景描述")
+  SCORE=$((SCORE + 30))
+  DETAIL+=("  ✓  [+30] 包含 'Use when' 触发场景描述")
 else
   DETAIL+=("  ✗  [-0 ] 缺少 'Use when' 段落——agent 不知道何时应该触发此 skill")
 fi
 
 # ── 检查项 3：包含 "Do NOT use for" 排除边界（20分）───────
 if echo "$DESCRIPTION" | grep -qi "do not use\|don't use\|不适用\|不要用于"; then
-  SCORE=$((SCORE + 20))
-  DETAIL+=("  ✓  [+20] 包含排除边界（Do NOT use for）")
+  SCORE=$((SCORE + 25))
+  DETAIL+=("  ✓  [+25] 包含排除边界（Do NOT use for）")
 else
   DETAIL+=("  ✗  [-0 ] 缺少 'Do NOT use for' 段落——可能与相邻 skill 产生误触发冲突")
 fi
 
-# ── 检查项 4：覆盖中文关键词（15分）──────────────────────
+# ── 检查项 4：语言覆盖提示（info，不计分）────────────────
+# 评分只看结构完整性，不绑定语言；中英文 description 在同一尺子下评估。
+HAS_ZH=false
 if echo "$DESCRIPTION" | grep -qP "[\x{4e00}-\x{9fff}]" 2>/dev/null || \
    echo "$DESCRIPTION" | grep -q "[一-龿]"; then
-  SCORE=$((SCORE + 15))
-  DETAIL+=("  ✓  [+15] 包含中文关键词（覆盖中文提问场景）")
+  HAS_ZH=true
+fi
+HAS_EN=false
+if echo "$DESCRIPTION" | grep -qE "[a-zA-Z]{2,}"; then
+  HAS_EN=true
+fi
+if [[ "$HAS_ZH" == true ]]; then
+  DETAIL+=("  ℹ  [ 0 ] 包含中文关键词，利于中文提问触发（info，不计分）")
+elif [[ "$HAS_EN" == true ]]; then
+  DETAIL+=("  ℹ  [ 0 ] 包含英文触发词，利于英文提问触发（info，不计分）")
 else
-  DETAIL+=("  ⚠  [-0 ] 未包含中文关键词——公司工程师多用中文提问，建议在 'Use when' 中加入中文触发词")
+  DETAIL+=("  ⚠  [ 0 ] 未检测到明确触发词，建议在 'Use when' 中补充触发词")
 fi
 
 # ── 检查项 5：description 长度合理（10分）────────────────
@@ -92,11 +102,11 @@ fi
 SCENARIO_PATTERNS="(when|mention|says|asks about|需要|提到|说.*时|遇到)"
 SCENARIO_COUNT="$(echo "$DESCRIPTION" | grep -ciE "$SCENARIO_PATTERNS" || true)"
 if [[ "$SCENARIO_COUNT" -ge 2 ]]; then
-  SCORE=$((SCORE + 10))
-  DETAIL+=("  ✓  [+10] 包含 ${SCENARIO_COUNT} 个具体场景关键词")
+  SCORE=$((SCORE + 15))
+  DETAIL+=("  ✓  [+15] 包含 ${SCENARIO_COUNT} 个具体场景关键词")
 elif [[ "$SCENARIO_COUNT" -eq 1 ]]; then
-  SCORE=$((SCORE + 5))
-  DETAIL+=("  ⚠  [+5 ] 只有 1 个场景关键词，建议补充更多触发场景")
+  SCORE=$((SCORE + 8))
+  DETAIL+=("  ⚠  [+8 ] 只有 1 个场景关键词，建议补充更多触发场景")
 else
   DETAIL+=("  ✗  [-0 ] 缺少具体场景描述，触发率低")
 fi
