@@ -1,0 +1,18 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "aic_demo_provider": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "aic_demo_provider",
+      "options": {
+        "baseURL": "http://your-api-host/v1",
+        "apiKey": "you-api-key"
+      },
+      "models": {
+        "custom-model-3": {
+          "name": "custom-model-3"
+        }
+      }
+    }
+  }
+}

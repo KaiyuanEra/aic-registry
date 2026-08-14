@@ -1,0 +1,15 @@
+{
+  "baseUrl": "http://your-api-host/v1",
+  "selectedAuthType": "gemini-api-key",
+  "general": {
+    "defaultApprovalMode": "default"
+  },
+  "ide": {
+    "hasSeenNudge": true
+  },
+  "security": {
+    "auth": {
+      "selectedType": "gemini-api-key"
+    }
+  }
+}

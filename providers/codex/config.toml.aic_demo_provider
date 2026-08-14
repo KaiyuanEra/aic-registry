@@ -1,0 +1,16 @@
+model_provider = "provider_a"
+model = "custom-model-2"
+model_reasoning_effort = "medium"
+disable_response_storage = false
+personality = "pragmatic"
+approval_policy = "on-request"
+
+
+
+[model_providers.provider_a]
+name = "provider_a"
+base_url = "http://your-api-host/v1"
+wire_api = "responses"
+env_key = "OPENAI_API_KEY"
+stream_max_retries = 10
+request_max_retries = 4
