@@ -50,6 +50,13 @@ What it does **not** provide:
 - A public marketplace or app store for Skills.
 - Hosted / cloud-synced registry services.
 - Guaranteed compatibility or support for third-party skills you add to your own fork.
+- **Adapted open-source skills** — useful skills from the open-source community, translated with proper versioning and
+  private-variable adaptation, curated as reusable engineering assets. Use the registry's built-in `aic-skill-creator`,
+  `aic-contexts-creator`, and `aic-mcp-creator` tools for authoring and schema validation.
+
+>  Important: after modifying any version number, run make index in the root directory to regenerate and validate
+skills/index.yaml, contexts/index.yaml, and other index files, ensuring Registry metadata stays consistent with actual
+content.
 
 > You are encouraged to treat your fork as the authoritative registry for yourself or your team. This public repository is just the starting point.
 

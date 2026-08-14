@@ -44,6 +44,11 @@ aic 是一个**本地优先的 AI 编程配置管理工具**，以一体化 TUI 
 - 一套**规范 / schema**：Skills、Contexts、MCP servers、Providers、权限的组织方式。
 - 少量**样例技能**（dev-plan、git-commit、docker-deploy 等），你可以保留、修改或替换。
 - Claude / Codex / Gemini / OpenCode 的**Provider 示例配置**，作为起点。
+- 将开源社区中好用的 skill **翻译**（版本化、私有变量化）后纳入本仓库，沉淀为可复用的工程资产。使用仓库内置的
+     `aic-skill-creator`、`aic-contexts-creator`、`aic-mcp-creator` 三个工具完成编写与规范校验。
+
+> 修改了任何版本号后，建议在根目录执行 make index 命令，重新生成并校验 skills/index.yaml、contexts/index.yaml
+等索引文件，确保 Registry 元数据与实际内容一致。
 
 本仓库**不**提供：
 
