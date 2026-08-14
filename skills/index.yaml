@@ -18,7 +18,7 @@ skills:
         - "registry-authoring"
       path: "skills/meta/aic-mcp-creator"
     - name: "aic-skill-creator"
-      version: "2.1.0"
+      version: "2.2.0"
       description: "编写、设计、改进 aic 内部 SKILL.md 文件。 Use when 创建新 skill、从零写 SKILL.md、优化 skill 的 description 触发质量、 设计 skill 目录结构，or when user mentions 写 skill、skill 怎么写、 description 不触发、skill 放哪个目录、env-required 怎么配、适配层怎么加。 Do NOT use for aic install/remove/sync 命令、管理已安装的 skill， 或编写与 skill 无关的业务代码文档。"
       tags:
         - "aic"
