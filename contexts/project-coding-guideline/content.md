@@ -1,92 +1,92 @@
-# AI 编码行为准则
+# AI Coding Guideline
 
 ------
 
-## 0. 本地工具能力
+## 0. Local Tool Capabilities
 
-**优先使用项目声明可用的命令行工具，不要假设未声明工具存在。**
+**Prioritize command-line tools declared as available by the project; do not assume undeclared tools exist.**
 
-本项目声明可用的命令行工具：
+This project declares the available command-line tools:
 
 ```text
 {{ aic.env.AIC_AVAILABLE_CLI_TOOLS }}
 ```
 
-当任务涉及仓库状态、提交历史、分支、Issue、MR 或 CI 状态时，优先使用上述工具完成检查。例如工具列表包含 `git` 时，使用 `git status`、`git diff`、`git log` 获取本地事实；包含 `glab` 时，优先用 `glab` 查询 GitLab Issue、MR、Pipeline 或 Release 信息。
+When tasks involve repository status, commit history, branches, issues, MRs, or CI status, prioritize using the above tools for checks. For example, when the tool list includes `git`, use `git status`, `git diff`, `git log` to get local facts; when it includes `glab`, prioritize `glab` for querying GitLab issues, MRs, pipelines, or release info.
 
-如果需要的工具不在列表中，先说明缺失工具和替代方案，不要直接编造命令输出。
-
-------
-
-## 1. 编码前先思考
-
-**不要假设，不要掩盖疑惑，主动暴露权衡点。**
-
-开始实现之前，必须做到：
-
-- **明确陈述你的假设**。如果不确定，直接问，不要自行猜测。
-- **多种解读并存时，列出方案供选择**，不要静默地选一个。
-- **存在更简单的方案时，主动说出来**，必要时直接反驳需求。
-- **遇到任何不清晰的地方，停下来**，说明哪里困惑，然后提问。
-
-> 典型错误：需求中 "UDP 探测成功" 的判定标准未定义，AI 自行选择了 ICMP 方式并写完了代码。 正确做法：停下来问 "UDP 探测的成功标准是什么？ICMP Echo、DNS 回包，还是自定义 payload？"
+If a needed tool is not in the list, first state the missing tool and an alternative; do not fabricate command output.
 
 ------
 
-## 2. 以简单为先
+## 1. Think Before Coding
 
-**用最少的代码解决问题，不写任何推测性代码。**
+**Do not assume; do not hide doubts; proactively expose tradeoffs.**
 
-- 不实现需求之外的功能。
-- 不为只用一次的代码创建抽象层或接口。
-- 不添加未被要求的"灵活性"或"可配置性"。
-- 不为不可能发生的场景写错误处理（**注意例外**：网络编程中几乎没有"不可能发生"的错误，连接中断、超时、DNS 失败都必须处理）。
+Before starting implementation, you must:
 
-**写完后要回头看**：如果你能明显看出现有实现存在更简洁的方案，主动重写，不要把冗余代码交出去。这不是行数限制，而是一种工程自律——能简化就不要留着复杂的版本。
+- **Clearly state your assumptions.** If unsure, ask directly; do not guess.
+- **When multiple interpretations exist, list options for selection**; do not silently pick one.
+- **When a simpler approach exists, say so proactively**; push back on requirements when necessary.
+- **When anything is unclear, stop**, explain what is confusing, then ask.
 
-自查标准：**"一个有经验的工程师会觉得这段代码过度设计吗？"** 如果答案是肯定的，简化它。
-
-------
-
-## 3. 精准修改，不越界
-
-**只动必须动的地方，只清理自己制造的混乱。**
-
-修改已有代码时：
-
-- 不"顺手优化"相邻代码、注释或格式。
-- 不重构没有损坏的东西。
-- 保持现有代码风格，即使你有不同偏好。
-- 发现无关的死代码时，**提及它，但不删除它**（除非被明确要求）。
-
-当你的改动产生了孤儿代码：
-
-- 删除**因你的改动**而变得无用的 import、变量、函数。
-- 不删除改动前就已存在的死代码。
-
-**验证标准：diff 中每一行变更，都应该能直接追溯到用户的请求。**
+> Typical mistake: the success criteria for "UDP probe" was undefined in the requirements; the AI chose ICMP and finished the code. Correct approach: stop and ask "What is the success criteria for a UDP probe? ICMP Echo, DNS response, or custom payload?"
 
 ------
 
-## 4. 以目标驱动执行
+## 2. Simplicity First
 
-**定义可验证的成功标准，循环迭代直到通过。**
+**Solve the problem with the least code; do not write speculative code.**
 
-将模糊任务转化为可验证目标：
+- Do not implement features beyond the requirements.
+- Do not create abstraction layers or interfaces for code used only once.
+- Do not add unrequested "flexibility" or "configurability."
+- Do not write error handling for impossible scenarios (**exception**: in network programming, there are almost no "impossible" errors; connection drops, timeouts, and DNS failures must all be handled).
 
-| 模糊表述        | 转化为可验证目标                                             |
+**Review after writing**: if you can clearly see a simpler approach in the existing implementation, proactively rewrite it; do not hand over redundant code. This is not a line-count limit but engineering discipline — if it can be simplified, do not keep the complex version.
+
+Self-check standard: **"Would an experienced engineer consider this code over-engineered?"** If yes, simplify it.
+
+------
+
+## 3. Precise Modifications, Stay in Bounds
+
+**Only touch what must be touched; only clean up messes you created.**
+
+When modifying existing code:
+
+- Do not "incidentally optimize" adjacent code, comments, or formatting.
+- Do not refactor things that are not broken.
+- Follow existing code style, even if you have different preferences.
+- When you find unrelated dead code, **mention it but do not delete it** (unless explicitly asked).
+
+When your changes produce orphaned code:
+
+- Delete imports, variables, and functions that became unused **due to your changes**.
+- Do not delete dead code that existed before your changes.
+
+**Validation standard: every line of change in the diff should be directly traceable to the user request.**
+
+------
+
+## 4. Goal-Driven Execution
+
+**Define verifiable success criteria; iterate until they pass.**
+
+Transform vague tasks into verifiable goals:
+
+| Vague statement | Transformed into verifiable goal |
 | --------------- | ------------------------------------------------------------ |
-| "加个校验"      | "为非法输入写测试用例，然后让测试通过"                       |
-| "修复这个 bug"  | "写一个能复现 bug 的测试，然后让它通过"                      |
-| "重构 X"        | "确保重构前后测试结果一致"                                   |
-| "实现 TCP 探测" | "写测试覆盖：连接成功 / 端口关闭 / 超时三种场景，然后让它们通过" |
+| "Add validation" | "Write test cases for invalid input, then make the tests pass" |
+| "Fix this bug" | "Write a test that reproduces the bug, then make it pass" |
+| "Refactor X" | "Ensure test results are consistent before and after refactoring" |
+| "Implement TCP probe" | "Write tests covering: connection success / port closed / timeout; then make them pass" |
 
-对于多步骤任务，先输出简要计划：
+For multi-step tasks, first output a brief plan:
 
 ```
-1. [步骤] → 验证方式：[检查项]
-2. [步骤] → 验证方式：[检查项]
-3. [步骤] → 验证方式：[检查项]
+1. [step] -> verification: [check item]
+2. [step] -> verification: [check item]
+3. [step] -> verification: [check item]
 ```
 
-明确的成功标准让 AI 可以独立循环迭代；模糊的标准（"让它工作"）只会导致反复确认。
+Clear success criteria let the AI iterate independently; vague criteria ("make it work") only lead to repeated confirmations.

@@ -1,97 +1,97 @@
-# 审查报告格式模板
+# Review Report Format Template
 
-复制此模板填写，不自由发挥结构。
+Copy this template and fill it in; do not improvise the structure.
 
 ---
 
 ```markdown
-## challenge 审查报告
+## challenge Review Report
 
-**审查范围：** {文件名:函数名} 或 {涉及的 N 个文件}
-**上下文来源：** dev-plan（Task N.M：{Task 标题}）/ README 架构章节 / 无上下文
-**审查语言：** Go / Java / Python
-
----
-
-### 阶段一：逻辑正确性
-
-#### ✅ 与 Task 意图一致 / ⚠️ 存在意图偏差
-
-（有 dev-plan 时）
-Task N.M 声明：{Task 描述}
-- {声明要做的事 1}：{代码实现情况}
-- {声明要做的事 2}：{代码实现情况，若未实现列为问题}
-
-（无 dev-plan 时）
-基于代码本身推断意图：{推断的函数目的}
-- {边界条件检查结论}
-- {错误路径检查结论}
-- {状态一致性检查结论}
+**Review scope:** {filename:function} or {N files involved}
+**Context source:** dev-plan (Task N.M: {Task title}) / README architecture section / no context
+**Review language:** Go / Java / Python
 
 ---
 
-### 阶段二：安全稳定性
+### Phase 1: Logic Correctness
 
-#### P0 危险（必须修复，不应合并）
+#### Consistent with Task intent / Intent deviation detected
 
-##### {问题简短标题}
+(With dev-plan)
+Task N.M states: {Task description}
+- {declared action 1}: {code implementation status}
+- {declared action 2}: {code implementation status; if not implemented, list as issue}
 
-- **位置：** `internal/linker/linker.go:L45`
-- **风险类型：** OOM / 崩溃 / 数据丢失 / 注入 / 泄漏
-- **触发条件：** 当 {具体输入/负载/并发情况} 时触发
-- **代码证据：**
+(Without dev-plan)
+Intent inferred from code: {inferred function purpose}
+- {boundary condition check conclusion}
+- {error path check conclusion}
+- {state consistency check conclusion}
+
+---
+
+### Phase 2: Security and Stability
+
+#### P0 Critical (must fix; should not merge)
+
+##### {Issue short title}
+
+- **Location:** `internal/linker/linker.go:L45`
+- **Risk type:** OOM / crash / data loss / injection / leak
+- **Trigger condition:** triggered when {specific input/load/concurrency}
+- **Code evidence:**
   ```go
-  // 有问题的代码（精确 3-5 行，标注行号）
+  // problematic code (exact 3-5 lines, with line numbers)
   for _, item := range items {
-      result = append(result, process(item))  // L45：无上限增长
+      result = append(result, process(item))  // L45: unbounded growth
   }
   ```
-- **风险说明：** 当 items 超过 X 时，在 Y 条件下，Z 会发生
-- **修复方向：** 在 L43 添加上限检查，超出时返回 ErrTooManyItems
+- **Risk explanation:** when items exceeds X, under Y conditions, Z will happen
+- **Fix direction:** add limit check at L43; return ErrTooManyItems when exceeded
 
 ---
 
-#### P1 需要关注（本次 MR 应修复）
+#### P1 Needs Attention (should fix in this MR)
 
-##### {问题简短标题}
+##### {Issue short title}
 
-- **位置：** `internal/config/loader.go:L23`
-- **风险类型：** 边界条件 / 错误处理 / 状态一致性
-- **触发条件：** 当 {具体条件} 时触发
-- **代码证据：**
+- **Location:** `internal/config/loader.go:L23`
+- **Risk type:** boundary condition / error handling / state consistency
+- **Trigger condition:** triggered when {specific condition}
+- **Code evidence:**
   ```go
-  // 有问题的代码
+  // problematic code
   ```
-- **风险说明：** {具体会发生什么}
-- **修复方向：** {具体操作}
+- **Risk explanation:** {what specifically will happen}
+- **Fix direction:** {specific action}
 
 ---
 
-#### P2 建议改进（下个 PR 处理）
+#### P2 Suggestions for Improvement (next PR)
 
-##### {问题简短标题}
+##### {Issue short title}
 
-- **位置：** `internal/config/project.go:L23`
-- **问题：** {一句话描述}
-- **影响：** {何时会暴露，后果是什么}
-- **建议：** {改进方向}
+- **Location:** `internal/config/project.go:L23`
+- **Issue:** {one-sentence description}
+- **Impact:** {when it will surface, what the consequence is}
+- **Suggestion:** {improvement direction}
 
 ---
 
-### 各层结论
+### Layer Conclusions
 
-| 层级 | 结论 | 数量 |
+| Layer | Conclusion | Count |
 |------|------|------|
-| 阶段一（逻辑正确性） | 通过 / 发现偏差 | N 个 |
-| P0（危险） | 未发现 / 发现 | N 个 |
-| P1（需关注） | 未发现 / 发现 | N 个 |
-| P2（建议改进） | 未发现 / 发现 | N 个 |
+| Phase 1 (Logic Correctness) | pass / deviation found | N |
+| P0 (Critical) | none found / found | N |
+| P1 (Needs Attention) | none found / found | N |
+| P2 (Suggestions) | none found / found | N |
 
 ---
 
-### 需要人工确认
+### Needs Manual Confirmation
 
-- `internal/env/renderer.go:L67`：`config` 变量来源不明。
-  若来自用户输入则存在注入风险，若来自内部配置则安全。
-  **需确认：** config 在哪里初始化，来源是什么？
+- `internal/env/renderer.go:L67`: source of `config` variable unknown.
+  If from user input, injection risk; if from internal config, safe.
+  **Need to confirm:** where is config initialized, what is the source?
 ```

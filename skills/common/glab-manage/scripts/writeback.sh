@@ -1,25 +1,25 @@
 #!/usr/bin/env bash
-# writeback.sh — 将 GitLab Issue 编号回写到 dev-plan.md
+# writeback.sh — Write GitLab Issue numbers back into dev-plan.md
 #
-# 用法：
+# Usage:
 #   writeback.sh --plan dev-plan.md --mapping '{"1.1": 42, "1.2": 43}'
 #   writeback.sh --plan dev-plan.md --mapping-file /tmp/issue-map.json
 #
-# mapping 格式：{"Task编号": Issue_iid}
-#   例：{"1.1": 42, "2.3": 51}
+# mapping format: {"Task ID": Issue_iid}
+#   e.g.: {"1.1": 42, "2.3": 51}
 #
-# 依赖：jq（brew install jq / apt install jq）
-# 退出码：0 = 全部回写成功，1 = 部分失败（输出未匹配清单）
+# Requires: jq (brew install jq / apt install jq)
+# Exit codes: 0 = all writebacks succeeded, 1 = partial failure (outputs unmatched list)
 
 set -euo pipefail
 
 usage() {
     cat >&2 <<'EOF'
-用法：
+Usage:
   writeback.sh --plan dev-plan.md --mapping '{"1.1": 42, "1.2": 43}'
   writeback.sh --plan dev-plan.md --mapping-file /tmp/issue-map.json
 
-退出码：0 = 全部回写成功，1 = 部分失败
+Exit codes: 0 = all writebacks succeeded, 1 = partial failure
 EOF
     exit 1
 }
@@ -34,32 +34,32 @@ while [[ $# -gt 0 ]]; do
         --mapping)      MAPPING_JSON="$2"; shift 2 ;;
         --mapping-file) MAPPING_FILE="$2"; shift 2 ;;
         -h|--help)      usage ;;
-        *)              echo "未知参数: $1" >&2; usage ;;
+        *)              echo "Unknown argument: $1" >&2; usage ;;
     esac
 done
 
-[[ -z "$PLAN" ]]   && { echo "错误：缺少 --plan 参数" >&2; exit 1; }
-[[ ! -f "$PLAN" ]] && { echo "错误：文件不存在：$PLAN" >&2; exit 1; }
+[[ -z "$PLAN" ]]   && { echo "Error: missing --plan argument" >&2; exit 1; }
+[[ ! -f "$PLAN" ]] && { echo "Error: file not found: $PLAN" >&2; exit 1; }
 
 if [[ -n "$MAPPING_JSON" ]]; then
     JSON="$MAPPING_JSON"
 elif [[ -n "$MAPPING_FILE" ]]; then
     JSON=$(cat "$MAPPING_FILE")
 else
-    echo "错误：必须提供 --mapping 或 --mapping-file" >&2; exit 1
+    echo "Error: must provide --mapping or --mapping-file" >&2; exit 1
 fi
 
-command -v jq >/dev/null 2>&1 || { echo "错误：需要 jq（brew install jq）" >&2; exit 1; }
-echo "$JSON" | jq empty 2>/dev/null || { echo "错误：mapping JSON 格式无效" >&2; exit 1; }
+command -v jq >/dev/null 2>&1 || { echo "Error: jq is required (brew install jq)" >&2; exit 1; }
+echo "$JSON" | jq empty 2>/dev/null || { echo "Error: invalid mapping JSON format" >&2; exit 1; }
 
 TMPMAP=$(mktemp)
 TMPOUT=$(mktemp)
 trap 'rm -f "$TMPMAP" "$TMPOUT"' EXIT
 
-# 将 mapping 展开为 "task_id issue_num" 每行一条
+# Expand mapping into "task_id issue_num" one per line
 echo "$JSON" | jq -r 'to_entries[] | .key + " " + (.value | tostring)' > "$TMPMAP"
 
-# 单次 awk 扫描完成所有替换
+# Single awk pass to complete all replacements
 awk_exit=0
 awk -v mapfile="$TMPMAP" '
 BEGIN {
@@ -73,40 +73,40 @@ BEGIN {
     current_task = ""
 }
 
-# 匹配 Task 标题行：#### Task 1.1: 或 #### Task 2.3 ...
+# Match Task heading line: #### Task 1.1: or #### Task 2.3 ...
 /^#{1,6}[[:space:]]+Task[[:space:]]+[0-9]/ {
     tmp = $0
-    sub(/.*Task[[:space:]]+/, "", tmp)   # 去掉标题前缀
-    sub(/[^0-9.].*/, "", tmp)            # 保留纯数字编号如 "1.1"
+    sub(/.*Task[[:space:]]+/, "", tmp)   # Strip heading prefix
+    sub(/[^0-9.].*/, "", tmp)            # Keep numeric ID only, e.g. "1.1"
     current_task = tmp
     in_task = (current_task in mapping) ? 1 : 0
     print; next
 }
 
-# 任何其他标题行重置上下文
+# Any other heading line resets context
 /^#{1,6}[[:space:]]/ {
     in_task = 0
     current_task = ""
     print; next
 }
 
-# 在 Task 块内替换第一个 #（待创建） 占位符
-in_task && /#（待创建）/ {
-    sub(/#（待创建）/, "#" mapping[current_task])
+# Within a Task block, replace the first #(pending) placeholder
+in_task && /#\(pending\)/ {
+    sub(/#\(pending\)/, "#" mapping[current_task])
     matched[current_task] = 1
-    in_task = 0   # 每个 Task 只替换一次
+    in_task = 0   # Replace only once per Task
     replaced++
 }
 
 { print }
 
 END {
-    printf "\n回写完成：%d 个 Task 更新 Issue 编号\n", replaced > "/dev/stderr"
+    printf "\nWriteback complete: %d Task(s) updated with Issue numbers\n", replaced > "/dev/stderr"
     fail = 0
     for (task in mapping) {
         if (!(task in matched)) {
-            if (!fail) printf "\n未匹配项（需手动填写）：\n" > "/dev/stderr"
-            printf "  - Task %s → #%s（未找到标题或待创建占位符）\n", task, mapping[task] > "/dev/stderr"
+            if (!fail) printf "\nUnmatched items (fill in manually):\n" > "/dev/stderr"
+            printf "  - Task %s → #%s (heading or pending placeholder not found)\n", task, mapping[task] > "/dev/stderr"
             fail = 1
         }
     }

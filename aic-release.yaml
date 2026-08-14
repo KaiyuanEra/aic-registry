@@ -1,5 +1,5 @@
 version: "v1.0.2"
 md5: ""
 release_url: ""
-features:
-  - "增加 aic 与 registry 版本一致性检测"
+ features:
+   - "Add aic-registry version consistency check"

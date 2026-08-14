@@ -1,52 +1,52 @@
-# 项目上下文：重构与演进期
+# Project Context: Refactor and Evolution
 
-## 1. 项目定位
+## 1. Project Positioning
 
-- 当前目标是在保持业务行为可验证的前提下完成架构迁移，不把重构变成无边界重写。
-- 每次修改前先判断属于旧架构维护、新架构建设还是迁移连接层；边界不清时先确认。
-- 旧架构以必要修复和迁移支持为主，新功能进入已经明确的新架构范围。
-- 重构不得静默改变业务语义；确需改变时将其作为独立需求和验证目标处理。
+- The current goal is to complete architecture migration while keeping business behavior verifiable; do not turn refactoring into unbounded rewriting.
+- Before each change, first determine whether it belongs to old architecture maintenance, new architecture construction, or migration connection layer; when boundaries are unclear, confirm first.
+- The old architecture focuses on necessary fixes and migration support; new features go into the clearly defined new architecture scope.
+- Refactoring must not silently change business semantics; when changes are needed, treat them as independent requirements and validation targets.
 
-## 2. 技术栈与架构
+## 2. Tech Stack and Architecture
 
-- 从目标项目已有架构文档、依赖清单和真实目录核验新旧技术栈与边界。
-- 建立改动所涉及模块的新旧映射，确认调用方、数据流、持久化和发布关系。
-- 已迁移状态只依据代码、测试、流量或发布事实，不使用主观百分比和时间估算。
-- 新旧实现并存时明确权威来源和流量入口，避免出现无法归属的第三套模式。
-- 迁移连接层保持薄且可删除，不承载新的长期业务逻辑。
+- Verify old and new tech stacks and boundaries from the target project existing architecture docs, dependency manifests, and real directories.
+- Establish old/new mappings for modules involved in the change; confirm callers, data flows, persistence, and release relationships.
+- Migration status is based only on code, tests, traffic, or release facts; do not use subjective percentages or time estimates.
+- When old and new implementations coexist, clarify the authoritative source and traffic entry point; avoid a third set of patterns that cannot be attributed.
+- The migration connection layer stays thin and deletable; do not carry new long-term business logic.
 
-## 3. 常用命令
+## 3. Common Commands
 
-- 分别使用目标项目已声明的旧架构和新架构构建、测试及启动命令。
-- 跨边界修改必须执行双方验证以及项目已有的一致性检查。
-- 优先从 CI、迁移脚本和项目文档获取真实命令；找不到时报告缺口，不猜测。
-- 执行迁移或清理命令前确认输入、作用范围、幂等性和恢复方式。
+- Use the old and new architecture build, test, and startup commands declared in the target project separately.
+- Cross-boundary changes must execute both side validations and existing project consistency checks.
+- Prioritize getting real commands from CI, migration scripts, and project docs; when not found, report the gap; do not guess.
+- Before executing migration or cleanup commands, confirm input, scope, idempotency, and recovery method.
 
-## 4. 代码规范
+## 4. Code Conventions
 
-- 旧架构遵循既有规范，只做必要修复，不在旧边界引入新架构模式。
-- 新架构遵循已经落地的本地模式，不以目标架构设想代替现有事实。
-- 不在同一模块混合新旧依赖方向、数据模型或错误处理风格。
-- 每条临时兼容规则必须带可验证的失效条件；条件满足后在同一阶段删除规则和代码。
-- 重构提交保持小步、可审查和可回退，业务行为变化与结构迁移分开处理。
+- The old architecture follows existing conventions; only make necessary fixes; do not introduce new architecture patterns into old boundaries.
+- The new architecture follows already-landed local patterns; do not replace existing facts with target architecture assumptions.
+- Do not mix old and new dependency directions, data models, or error handling styles in the same module.
+- Every temporary compatibility rule must carry a verifiable expiry condition; when the condition is met, delete the rule and code in the same phase.
+- Refactoring commits stay small-step, reviewable, and rollbackable; business behavior changes and structural migrations are handled separately.
 
-## 5. 禁止事项与高危操作
+## 5. Prohibitions and High-Risk Operations
 
-- 不在边界未确认时同时修改同一功能的新旧实现。
-- 不删除旧代码、旧数据或兼容层，除非替代路径已验证且不存在有效调用方。
-- 不进行缺少回滚方案的一次性迁移，不用手工数据修补掩盖迁移缺陷。
-- 不借重构扩大需求范围、统一无关代码风格或替换未涉及的基础设施。
-- 不提交密钥、凭证或真实敏感数据。
+- Do not modify both old and new implementations of the same feature simultaneously when boundaries are unconfirmed.
+- Do not delete old code, old data, or compatibility layers unless the replacement path is verified and no active callers exist.
+- Do not perform one-shot migrations without a rollback plan; do not use manual data patches to cover up migration defects.
+- Do not use refactoring to expand requirement scope, unify unrelated code styles, or replace untouched infrastructure.
+- Do not commit keys, credentials, or real sensitive data.
 
-## 6. 测试与验证流程
+## 6. Testing and Validation Flow
 
-- 先建立重构前的行为基线，再证明重构后关键输入、输出和副作用保持一致。
-- 修改旧架构时运行旧侧测试，修改新架构时运行新侧测试，跨边界时两侧都验证。
-- 使用项目已有的双写、回放、灰度或对比机制验证一致性；没有机制时采用可重复的等价验证。
-- 删除旧实现前确认调用方迁移、数据迁移、监控、回滚和发布状态均满足退出条件。
-- 完成标准必须可由测试或运行事实证明，不能只以代码已经迁移作为依据。
+- First establish a pre-refactor behavior baseline, then prove that key inputs, outputs, and side effects remain consistent after refactoring.
+- When modifying the old architecture, run old-side tests; when modifying the new architecture, run new-side tests; for cross-boundary changes, verify both sides.
+- Use existing dual-write, replay, canary, or comparison mechanisms to verify consistency; when no mechanism exists, use reproducible equivalent validation.
+- Before deleting old implementations, confirm that caller migration, data migration, monitoring, rollback, and release status all meet exit conditions.
+- Completion criteria must be demonstrable by tests or runtime facts; code migration alone is not sufficient.
 
-## 7. 外部文档引用
+## 7. External Documentation References
 
-- 优先读取目标项目中已确认存在的迁移方案、架构决策记录和新旧对照文档。
-- 临时约定在权威迁移文档中维护失效条件，长期记忆只保留稳定边界和阅读入口。
+- Prioritize reading migration plans, architecture decision records, and old/new comparison docs that already exist in the target project.
+- Temporary conventions maintain expiry conditions in authoritative migration docs; long-term memory retains only stable boundaries and reading entry points.

@@ -1,91 +1,91 @@
-# 反模式文档
+# Anti-Patterns
 
-> 收录编写 aic skill 时最常见的错误，每条附有修正示例。
+> Collects the most common mistakes when writing aic skills, each with a corrected example.
 
 ---
 
-## AP-01：description 过于模糊
+## AP-01: description too vague
 
-**错误**
+**Wrong**
 ```yaml
 description: Helps with database operations.
 ```
 
-**问题：** 动词 "helps"、"assists"、"handles" 对 agent 没有语义价值。没有 `Use when`，agent 不知道何时触发。
+**Problem:** Verbs like "helps", "assists", "handles" have no semantic value to the agent. Without Use when, the agent does not know when to trigger.
 
-**修正**
+**Fix**
 ```yaml
 description: >
-  执行数据库迁移、优化慢查询、管理连接配置。
-  Use when user mentions 数据库迁移, schema changes, or slow query optimization.
-  Do NOT use for Redis/MongoDB 或应用层 ORM 代码编写。
+  Run database migrations, optimize slow queries, and manage connection configuration.
+  Use when user mentions database migration, schema changes, or slow query optimization.
+  Do NOT use for Redis/MongoDB or application-layer ORM code.
 ```
 
 ---
 
-## AP-02：description 只描述实现，不描述触发场景
+## AP-02: description describes implementation, not trigger scenarios
 
-**错误**
+**Wrong**
 ```yaml
 description: Uses pdfplumber to extract text from PDF files.
 ```
 
-**问题：** 工程师不会说"用 pdfplumber 处理 PDF"，他们会说"帮我解析这个 PDF"。description 应该匹配用户的提问方式，而不是实现细节。
+**Problem:** Engineers do not say "use pdfplumber to process a PDF", they say "parse this PDF for me". The description should match how users ask questions, not implementation details.
 
-**修正**
+**Fix**
 ```yaml
 description: >
-  从 PDF 中提取文本、表格、表单数据。
+  Extract text, tables, and form data from PDFs.
   Use when user asks about PDFs, mentions .pdf files, needs form filling,
-  or says "帮我解析这个文件" / "提取 PDF 内容".
-  Do NOT use for图片 OCR 或 Word/Excel 文件处理。
+  or says parse this file or extract PDF content.
+  Do NOT use for image OCR or Word/Excel file processing.
 ```
 
 ---
 
-## AP-03：缺少 version 字段
+## AP-03: missing version field
 
-**错误**
+**Wrong**
 ```yaml
 ---
 name: log-analyzer
-description: 分析日志文件...
+description: Analyze log files...
 tags: [ops]
 ---
 ```
 
-**问题：** aic 强制要求 `version` 字段。缺失时 `aic install` 会拒绝安装并报错。
+**Problem:** aic requires the version field. Without it, aic install will refuse to install and report an error.
 
-**修正**
+**Fix**
 ```yaml
 ---
 name: log-analyzer
 version: 1.0.0
-description: 分析日志文件...
+description: Analyze log files...
 tags: [ops]
 ---
 ```
 
 ---
 
-## AP-04：env-required: true 但缺少 env-vars 声明
+## AP-04: env-required: true but missing env-vars declaration
 
-**错误**
+**Wrong**
 ```yaml
 ---
 name: database-ops
 version: 1.0.0
 description: ...
 env-required: true
-# 忘记声明 env-vars
+# forgot to declare env-vars
 ---
 
-连接到 {{DB_HOST}}，用户 {{DB_USER}}
+Connect to {{DB_HOST}}, user {{DB_USER}}
 ```
 
-**问题：** `validate.sh` 会报错。缺少 `env-vars` 时，skill 无法说明需要哪些变量，也无法在 `aic env check` 中提示工程师补充。
+**Problem:** validate.sh will report an error. Without env-vars, the skill cannot specify which variables it needs, and aic env check cannot prompt engineers to fill them in.
 
-**修正**
+**Fix**
 ```yaml
 ---
 name: database-ops
@@ -94,11 +94,11 @@ description: ...
 env-required: true
 env-vars:
   - name: DB_HOST
-    description: 数据库主机地址
+    description: Database host address
     required: true
     target: skill
   - name: DB_USER
-    description: 数据库用户名
+    description: Database username
     required: true
     target: skill
 ---
@@ -106,9 +106,9 @@ env-vars:
 
 ---
 
-## AP-04B：变量名格式错误或重复
+## AP-04B: variable name format error or duplicate
 
-**错误**
+**Wrong**
 ```yaml
 env-vars:
   - name: api_key
@@ -125,9 +125,9 @@ env-vars:
     target: skill
 ```
 
-**问题：** 变量名必须匹配 `^[A-Z][A-Z0-9_]*$`，区分大小写，且同一声明中不得重复。
+**Problem:** Variable names must match ^[A-Z][A-Z0-9_]*$, are case-sensitive, and must not be duplicated within the same declaration.
 
-**修正**
+**Fix**
 ```yaml
 env-vars:
   - name: API_KEY
@@ -138,126 +138,126 @@ env-vars:
 
 ---
 
-## AP-05：正文中写入真实的敏感值
+## AP-05: real sensitive values written in the body
 
-**错误**
+**Wrong**
 ```markdown
-# 数据库操作规范
-连接信息：
+# Database Operations
+Connection info:
 - Host: 10.0.1.100
 - Password: prod_secret_2024
 ```
 
-**问题：** SKILL.md 会提交到 GitLab 公司仓库，任何有权限的人都能看到。真实值属于高危泄露风险。
+**Problem:** SKILL.md is committed to the repository; anyone with access can see it. Real values are a high-risk leak.
 
-**修正**
+**Fix**
 ```markdown
-# 数据库操作规范
-环境变量说明：
-- `DB_HOST`：数据库连接入口，缺失时停止并提示用户补齐
-- `DB_PASSWORD`：数据库密码，缺失时停止并提示用户补齐
+# Database Operations
+Environment variable notes:
+- DB_HOST: database connection entry point; if missing, stop and prompt the user to fill it in
+- DB_PASSWORD: database password; if missing, stop and prompt the user to fill it in
 ```
 
 ---
 
-## AP-06：目录名与 name 字段不一致
+## AP-06: directory name does not match the name field
 
-**错误**
+**Wrong**
 ```
-skills/common/pdf_processing/   ← 下划线
-    SKILL.md  → name: pdf-processing   ← 连字符
+skills/common/pdf_processing/   <- underscore
+    SKILL.md  -> name: pdf-processing   <- hyphen
 ```
 
-**问题：** aic 通过目录名加载 skill，名称不一致时 skill 不会被正确识别。
+**Problem:** aic loads skills by directory name; if the names do not match, the skill will not be recognized correctly.
 
-**修正规则：** 目录名和 `name` 字段必须**完全一致**，统一使用**小写连字符**（kebab-case）：
+**Fix rule:** The directory name and name field must be **exactly the same**, using **lowercase kebab-case**:
 ```
 skills/common/pdf-processing/
-    SKILL.md  → name: pdf-processing  ✅
+    SKILL.md  -> name: pdf-processing  OK
 ```
 
 ---
 
-## AP-07：SKILL.md 正文超过 500 行
+## AP-07: SKILL.md body exceeds 500 lines
 
-**错误：** 把完整的操作手册、API 文档、示例集都写进 SKILL.md 正文。
+**Wrong:** Putting the complete operations manual, API documentation, and example collection into the SKILL.md body.
 
-**问题：** 每次 skill 被触发，整个正文都会加载进 context window。500 行约 5000 tokens，再长会显著消耗 agent 的可用 context，影响其他 skill 和对话内容。
+**Problem:** Every time the skill triggers, the entire body loads into the context window. 500 lines is about 5000 tokens; going longer significantly consumes the agent available context, affecting other skills and conversation content.
 
-**修正原则：**
-- SKILL.md 是「作弊单」（cheat sheet），不是完整文档
-- 参考内容、详细规范、示例集移到 `references/` 目录
-- 正文只保留核心流程和最关键的判断依据
+**Fix principle:**
+- SKILL.md is a cheat sheet, not complete documentation
+- Reference content, detailed specs, and example collections go into the references/ directory
+- The body keeps only the core workflow and the most critical decision criteria
 
 ```
 skill/
-├── SKILL.md              ← 核心流程，< 500 行
-└── references/
-    ├── api-reference.md  ← 详细 API 文档，按需加载
-    └── examples.md       ← 完整示例集，按需加载
++-- SKILL.md              <- core workflow, < 500 lines
++-- references/
+    +-- api-reference.md  <- detailed API docs, loaded on demand
+    +-- examples.md       <- complete example collection, loaded on demand
 ```
 
 ---
 
-## AP-08：references/ 中存在嵌套引用链
+## AP-08: nested reference chains in references/
 
-**错误**
+**Wrong**
 ```markdown
 <!-- SKILL.md -->
-详见 [规范A](references/spec-a.md)
+See [spec A](references/spec-a.md)
 
 <!-- references/spec-a.md -->
-更多细节见 [规范B](references/spec-b.md)
+More details in [spec B](references/spec-b.md)
 
 <!-- references/spec-b.md -->
-另见 [规范C](references/spec-c.md)
+Also see [spec C](references/spec-c.md)
 ```
 
-**问题：** Agent 需要多次读取才能获得完整信息，增加 context 消耗，且引用链容易断裂。
+**Problem:** The agent needs multiple reads to get complete information, increasing context consumption, and reference chains are prone to breaking.
 
-**修正：** references/ 中的文件应该自包含，引用深度不超过一层。
+**Fix:** Files in references/ should be self-contained; reference depth should not exceed one level.
 
 ---
 
-## AP-09：description 与相邻 skill 边界不清
+## AP-09: description boundary unclear with adjacent skills
 
-**错误场景：** 项目中同时有 `database-ops`（操作规范）和 `database-migration`（专门处理迁移），但两者 description 都写了"执行数据库迁移"，导致 agent 随机触发其中一个。
+**Wrong scenario:** A project has both database-ops (operations) and database-migration (migration-specific), but both descriptions say "run database migrations", causing the agent to randomly trigger one.
 
-**修正：** 在两个 skill 的 description 中互相排除：
+**Fix:** Exclude each other in both skills descriptions:
 
 ```yaml
-# database-ops 的 description
+# database-ops description
 description: >
-  数据库日常操作规范：查询优化、连接配置、索引管理。
+  Database daily operations: query optimization, connection config, index management.
   Use when optimizing queries, managing connections, or tuning database performance.
-  Do NOT use for schema migrations（迁移请用 database-migration skill）.
+  Do NOT use for schema migrations (use the database-migration skill).
 
-# database-migration 的 description
+# database-migration description
 description: >
-  执行数据库 Schema 迁移，管理迁移脚本版本。
+  Run database schema migrations and manage migration script versions.
   Use when running migrations, writing migration scripts, or rolling back schema changes.
   Do NOT use for query optimization or routine database operations.
 ```
 
 ---
 
-## AP-10：适配层文件不完整
+## AP-10: incomplete adapter layer files
 
-**错误：** 创建了 `adapters/claude/SKILL.md`，但只写了 `allowed-tools` frontmatter，正文为空。
+**Wrong:** Created adapters/claude/SKILL.md but only wrote the allowed-tools frontmatter, with an empty body.
 
-**问题：** 适配层文件是完整独立文件，不做字段合并。空正文意味着 Claude Code 读到的 skill 没有任何指令。
+**Problem:** Adapter layer files are complete standalone files; no field merging is done. An empty body means Claude Code reads a skill with no instructions.
 
-**修正：** 适配层文件必须包含完整的 frontmatter + 正文。可以从主 SKILL.md 复制正文再添加 Claude 专有字段：
+**Fix:** Adapter layer files must contain complete frontmatter + body. You can copy the body from the main SKILL.md and add Claude-specific fields:
 
 ```yaml
 ---
 name: database-ops
 version: 1.2.0
-description: >   # 与主 SKILL.md 保持一致
+description: >   # keep consistent with main SKILL.md
   ...
-allowed-tools: [Bash, Read]   # Claude Code 专有字段
+allowed-tools: [Bash, Read]   # Claude Code specific field
 ---
 
-# Database Ops（Claude Code 版本）
-[完整正文，与主 SKILL.md 相同或有针对性修改]
+# Database Ops (Claude Code version)
+[complete body, same as main SKILL.md or with targeted modifications]
 ```

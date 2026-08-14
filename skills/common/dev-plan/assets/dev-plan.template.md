@@ -1,168 +1,168 @@
-# {项目名} 开发计划
+# {Project Name} Development Plan
 
-> 最后更新：{YYYY-MM-DD} | 版本：v1 | 状态：进行中
+> Last updated: {YYYY-MM-DD} | Version: v1 | Status: in progress
 
-## 已归档 Phase 索引
+## Archived Phase Index
 
-| Phase | 阶段名 | 完成时间 | Task 数 | Issue 范围 |
+| Phase | Stage name | Completion date | Task count | Issue range |
 |-------|--------|---------|--------|-----------|
-| （无） | - | - | - | - |
+| (none) | - | - | - | - |
 
 ---
 
-## 变更记录
+## Change Log
 
-| 版本 | 日期 | 变更内容 |
+| Version | Date | Change description |
 |------|------|----------|
-| v1 | {YYYY-MM-DD} | 初始版本 |
+| v1 | {YYYY-MM-DD} | Initial version |
 
 ---
 
-## 1. 项目概述
+## 1. Project Overview
 
-### 1.1 背景与目标
+### 1.1 Background and Goals
 
-{描述项目背景、要解决的问题、核心目标}
+{Describe project background, problem to solve, core goals}
 
-### 1.2 核心用户场景（3-5 条）
+### 1.2 Core User Scenarios (3-5 items)
 
-1. 用户 A 需要 {场景描述}，期望 {结果}
-2. 用户 B 需要 {场景描述}，期望 {结果}
-3. {更多场景}
+1. User A needs {scenario description}; expects {result}
+2. User B needs {scenario description}; expects {result}
+3. {more scenarios}
 
-### 1.3 范围边界
+### 1.3 Scope Boundaries
 
-**做：**
-- {功能一}
-- {功能二}
+**Do:**
+- {feature one}
+- {feature two}
 
-**不做（本期）：**
-- {排除项一}
-- {排除项二}
+**Do NOT (this iteration):**
+- {exclusion one}
+- {exclusion two}
 
 ---
 
-## 2. 技术栈
+## 2. Technology Stack
 
-| 层次 | 技术选型 | 版本 | 选型理由 |
+| Layer | Technology | Version | Selection rationale |
 |------|----------|------|----------|
-| 语言 | {Go / Python / TypeScript} | {版本} | {理由} |
-| 框架 | {框架名} | {版本} | {理由} |
-| 存储 | {数据库} | {版本} | {理由} |
-| {其他} | {技术} | {版本} | {理由} |
+| Language | {Go / Python / TypeScript} | {version} | {reason} |
+| Framework | {framework name} | {version} | {reason} |
+| Storage | {database} | {version} | {reason} |
+| {other} | {technology} | {version} | {reason} |
 
 ---
 
-## 3. 整体架构设计
+## 3. Overall Architecture Design
 
-### 3.1 架构图
+### 3.1 Architecture Diagram
 
 ```
-{ASCII 架构图或 Mermaid 代码}
+{ASCII architecture diagram or Mermaid code}
 
-示例（ASCII）：
-用户请求
-    │
-    ▼
-┌─────────┐     ┌─────────┐
-│  模块 A  │────▶│  模块 B  │
-└─────────┘     └─────────┘
-                     │
-                     ▼
-               ┌─────────┐
-               │  存储层  │
-               └─────────┘
+Example (ASCII):
+User Request
+    |
+    v
++-----------+     +-----------+
+|  Module A  |---->|  Module B  |
++-----------+     +-----------+
+                     |
+                     v
+               +-----------+
+               |  Storage   |
+               +-----------+
 ```
 
-### 3.2 模块职责
+### 3.2 Module Responsibilities
 
-| 模块 | 职责 |
+| Module | Responsibility |
 |------|------|
-| {模块 A} | {一句话说明} |
-| {模块 B} | {一句话说明} |
+| {Module A} | {one-sentence description} |
+| {Module B} | {one-sentence description} |
 
-### 3.3 关键数据流
-
-```
-{描述核心业务流程中数据如何流转}
-步骤 1：{输入} → {处理} → {输出}
-步骤 2：{输入} → {处理} → {输出}
-```
-
----
-
-## 4. 项目结构
+### 3.3 Key Data Flows
 
 ```
-{项目名}/
-├── {目录或文件}      # {一句话说明}
-├── {目录或文件}/
-│   ├── {子文件}      # {一句话说明}
-│   └── {子文件}      # {一句话说明}
-└── {目录或文件}      # {一句话说明}
+{Describe how data flows through core business processes}
+Step 1: {input} -> {processing} -> {output}
+Step 2: {input} -> {processing} -> {output}
 ```
 
 ---
 
-## 5. 开发计划
+## 4. Project Structure
 
-### 阶段划分原则
-
-{说明按什么维度划分阶段：功能模块 / 交付里程碑 / 依赖关系}
-
----
-
-### Phase 1: {功能名，人类可读，如"用户登录与权限校验"} | 预估工期：{n}天 | 优先级：P0 | Issue: #（待创建） | 状态：🔄 进行中
-
-**目标：** {本阶段交付什么，为什么先做}
-
-#### Task 1.1: 实现 {具体功能}
-
-- **目标：** {实现什么，验收标准是什么}
-- **涉及文件：** `path/to/file.go`, `path/to/other.go`
-- **输入：** 无依赖（基础模块）
-- **输出：** `FunctionName(param Type) (ReturnType, error)` 函数可调用
-- **预估：** {n} 小时
-- **Issue：** #（待创建）
-- **注意：** {边缘情况、技术风险}（可选）
-
-#### Task 1.2: 实现 {具体功能}
-
-- **目标：** {实现什么，验收标准是什么}
-- **涉及文件：** `path/to/file.go`
-- **输入：** Task 1.1 完成
-- **输出：** {产出物}
-- **预估：** {n} 小时
-- **Issue：** #（待创建）
+```
+{project-name}/
++-- {directory or file}      # {one-sentence description}
++-- {directory or file}/
+|   +-- {sub-file}      # {one-sentence description}
+|   +-- {sub-file}      # {one-sentence description}
++-- {directory or file}      # {one-sentence description}
+```
 
 ---
 
-### Phase 2: {功能名，人类可读，如"命令行安装与配置向导"} | 预估工期：{n}天 | 优先级：P1 | Issue: #（待创建） | 状态：🔄 进行中
+## 5. Development Plan
 
-**目标：** {本阶段交付什么}
+### Phase Division Principle
 
-#### Task 2.1: 实现 {具体功能}
-
-- **目标：** {实现什么}
-- **涉及文件：** `path/to/file`
-- **输入：** Phase 1 全部完成
-- **输出：** {产出物}
-- **预估：** {n} 小时
-- **Issue：** #（待创建）
+{Explain what dimension Phases are divided by: feature modules / delivery milestones / dependency relationships}
 
 ---
 
-<!-- 以下为阶段模板，按需复制 -->
+### Phase 1: {feature name, human-readable, e.g. "User Login and Permission Validation"} | Estimated: {n} days | Priority: P0 | Issue: #(pending) | Status: in progress
+
+**Goal:** {what this Phase delivers; why it is done first}
+
+#### Task 1.1: Implement {specific feature}
+
+- **Goal:** {what to implement; what the acceptance criteria are}
+- **Files involved:** `path/to/file.go`, `path/to/other.go`
+- **Input:** no dependency (foundation module)
+- **Output:** `FunctionName(param Type) (ReturnType, error)` function callable
+- **Estimate:** {n} hours
+- **Issue:** #(pending)
+- **Note:** {edge cases, technical risks} (optional)
+
+#### Task 1.2: Implement {specific feature}
+
+- **Goal:** {what to implement; what the acceptance criteria are}
+- **Files involved:** `path/to/file.go`
+- **Input:** Task 1.1 completed
+- **Output:** {deliverable}
+- **Estimate:** {n} hours
+- **Issue:** #(pending)
+
+---
+
+### Phase 2: {feature name, human-readable, e.g. "Command-Line Install and Config Wizard"} | Estimated: {n} days | Priority: P1 | Issue: #(pending) | Status: in progress
+
+**Goal:** {what this Phase delivers}
+
+#### Task 2.1: Implement {specific feature}
+
+- **Goal:** {what to implement}
+- **Files involved:** `path/to/file`
+- **Input:** Phase 1 all completed
+- **Output:** {deliverable}
+- **Estimate:** {n} hours
+- **Issue:** #(pending)
+
+---
+
+<!-- Phase template below; copy as needed -->
 <!--
-### Phase N: {阶段名} | 预估工期：{n}天 | 优先级：P{n}
+### Phase N: {stage name} | Estimated: {n} days | Priority: P{n}
 
-**目标：** {本阶段交付什么}
+**Goal:** {what this Phase delivers}
 
-#### Task N.1: 实现 {具体功能}
-- **目标：**
-- **涉及文件：**
-- **输入：**
-- **输出：**
-- **预估：**
-- **Issue：** #（待创建）
+#### Task N.1: Implement {specific feature}
+- **Goal:**
+- **Files involved:**
+- **Input:**
+- **Output:**
+- **Estimate:**
+- **Issue:** #(pending)
 -->

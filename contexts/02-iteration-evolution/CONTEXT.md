@@ -1,7 +1,7 @@
 ---
 name: 02-iteration-evolution
 version: 1.0.0
-description: 迭代与业务演进期项目使用的中文项目级长期记忆，强调团队协作、可验证规范和持续交付质量。
+description: Project-level long-term memory for iteration and business evolution stage projects, emphasizing team collaboration, verifiable conventions, and continuous delivery quality.
 targets:
   - CLAUDE.md
   - AGENTS.md
@@ -10,6 +10,6 @@ content: content.md
 env-required: false
 ---
 
-# 迭代与业务演进期 Context
+# Iteration and Evolution Context
 
-用于架构基本定型、团队协作频繁且功能持续迭代的项目阶段。
+For project stages where architecture is basically finalized, team collaboration is frequent, and features are continuously iterated.

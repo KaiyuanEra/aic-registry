@@ -1,32 +1,32 @@
-# Java / Kotlin 风险模式库
+# Java / Kotlin Risk Pattern Library
 
 ---
 
-## OOM / 内存泄漏
+## OOM / Memory Leak
 
-### 大集合未分页加载
+### Large collection loaded without pagination
 
 ```java
-// ❌ 危险：一次性加载全表
-List<User> users = userRepository.findAll();  // 百万行数据直接进内存
+// DANGEROUS: load entire table at once
+List<User> users = userRepository.findAll();  // millions of rows into memory
 
-// ✅ 安全：分页查询
+// SAFE: paginated query
 Page<User> page = userRepository.findAll(PageRequest.of(0, 100));
 ```
 
-### ThreadLocal 未清理
+### ThreadLocal not cleaned
 
 ```java
-// ❌ 危险：线程池复用线程，ThreadLocal 值残留
+// DANGEROUS: thread pool reuses threads; ThreadLocal value persists
 private static ThreadLocal<UserContext> context = new ThreadLocal<>();
 
 void handleRequest(User user) {
     context.set(new UserContext(user));
     process();
-    // 忘记 context.remove()，线程归还线程池后值仍存在
+    // forgot context.remove(); value persists after thread returned to pool
 }
 
-// ✅ 安全
+// SAFE
 try {
     context.set(new UserContext(user));
     process();
@@ -35,16 +35,16 @@ try {
 }
 ```
 
-### 字符串拼接在循环内
+### String concatenation inside loop
 
 ```java
-// ❌ 危险：每次 + 创建新 String 对象
+// DANGEROUS: each + creates a new String object
 String result = "";
 for (String item : items) {
-    result += item;  // O(n²) 内存分配
+    result += item;  // O(n^2) memory allocation
 }
 
-// ✅ 安全
+// SAFE
 StringBuilder sb = new StringBuilder();
 for (String item : items) {
     sb.append(item);
@@ -53,15 +53,15 @@ for (String item : items) {
 
 ---
 
-## 崩溃
+## Crash
 
-### NPE 链式调用
+### NPE chained call
 
 ```java
-// ❌ 危险：任意一层为 null 时 NPE
+// DANGEROUS: NPE if any level is null
 String city = user.getAddress().getCity().toUpperCase();
 
-// ✅ 安全：Optional 链
+// SAFE: Optional chain
 String city = Optional.ofNullable(user)
     .map(User::getAddress)
     .map(Address::getCity)
@@ -69,93 +69,93 @@ String city = Optional.ofNullable(user)
     .orElse("");
 ```
 
-### 线程池拒绝策略未配置
+### Thread pool rejection policy not configured
 
 ```java
-// ❌ 危险：默认 AbortPolicy，队列满时抛 RejectedExecutionException
+// DANGEROUS: default AbortPolicy; throws RejectedExecutionException when queue is full
 ExecutorService pool = new ThreadPoolExecutor(
     10, 20, 60L, TimeUnit.SECONDS,
     new LinkedBlockingQueue<>(100)
-    // 未指定 RejectedExecutionHandler
+    // no RejectedExecutionHandler specified
 );
 ```
 
-**触发条件：** 突发流量导致队列满，未捕获的异常可能导致请求丢失
+**Trigger condition:** burst traffic fills the queue; uncaught exception may cause request loss
 
 ---
 
-## 并发
+## Concurrency
 
-### HashMap 并发修改
+### HashMap concurrent modification
 
 ```java
-// ❌ 危险：HashMap 不是线程安全的
+// DANGEROUS: HashMap is not thread-safe
 Map<String, String> cache = new HashMap<>();
-// 多线程并发 put 可能导致死循环（Java 7）或数据丢失（Java 8+）
+// concurrent put may cause infinite loop (Java 7) or data loss (Java 8+)
 
-// ✅ 安全
+// SAFE
 Map<String, String> cache = new ConcurrentHashMap<>();
 ```
 
-### 双重检查锁无 volatile
+### Double-checked locking without volatile
 
 ```java
-// ❌ 危险：instance 可能被观察到部分初始化状态
+// DANGEROUS: instance may be observed in partially initialized state
 private static Singleton instance;
 
 public static Singleton getInstance() {
     if (instance == null) {
         synchronized (Singleton.class) {
             if (instance == null) {
-                instance = new Singleton();  // 非原子操作
+                instance = new Singleton();  // non-atomic operation
             }
         }
     }
     return instance;
 }
 
-// ✅ 安全：添加 volatile
+// SAFE: add volatile
 private static volatile Singleton instance;
 ```
 
 ---
 
-## Java 特有陷阱
+## Java-Specific Pitfalls
 
-### 资源未关闭
+### Resource not closed
 
 ```java
-// ❌ 危险：异常时资源泄漏
+// DANGEROUS: resource leak on exception
 InputStream is = new FileInputStream(file);
 process(is);
-is.close();  // 若 process 抛异常，close 不会执行
+is.close();  // if process throws, close does not execute
 
-// ✅ 安全：try-with-resources
+// SAFE: try-with-resources
 try (InputStream is = new FileInputStream(file)) {
     process(is);
 }
 ```
 
-### equals/hashCode 不一致
+### equals/hashCode inconsistency
 
 ```java
-// ❌ 危险：只重写 equals，不重写 hashCode
+// DANGEROUS: only override equals, not hashCode
 class User {
     @Override
     public boolean equals(Object o) { ... }
-    // 未重写 hashCode
+    // hashCode not overridden
 }
 
 Set<User> set = new HashSet<>();
 set.add(user1);
-set.contains(user1);  // 可能返回 false！
+set.contains(user1);  // may return false!
 ```
 
-### Integer 缓存范围
+### Integer cache range
 
 ```java
-// ❌ 危险：-128~127 范围外，== 比较失效
+// DANGEROUS: outside -128 to 127, == comparison fails
 Integer a = 200;
 Integer b = 200;
-a == b;  // false！应使用 a.equals(b)
+a == b;  // false! should use a.equals(b)
 ```

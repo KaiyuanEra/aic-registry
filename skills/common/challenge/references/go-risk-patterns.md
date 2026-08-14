@@ -1,75 +1,75 @@
-# Go 高频风险模式库
+# Go Risk Pattern Library
 
-Go 是 aic 主要语言，以下模式作为首要参考。
+Go is the primary language for aic; the following patterns serve as the primary reference.
 
 ---
 
-## OOM / 内存泄漏
+## OOM / Memory Leak
 
-### 无界集合增长
+### Unbounded collection growth
 
 ```go
-// ❌ 危险：循环中 append 无上限
+// DANGEROUS: append in loop without limit
 func processAll(items []Item) []Result {
     var result []Result
     for _, item := range items {
-        result = append(result, process(item))  // 无上限增长
+        result = append(result, process(item))  // unbounded growth
     }
     return result
 }
 ```
 
-**触发条件：** items 来自外部输入或数据库查询，大流量下持续增长  
-**修复方向：** 添加上限检查，或改为流式处理
+**Trigger condition:** items from external input or database query; grows continuously under high traffic
+**Fix direction:** add a limit check, or switch to streaming processing
 
-### goroutine 泄漏
+### goroutine leak
 
 ```go
-// ❌ 危险：goroutine 无明确退出条件
+// DANGEROUS: goroutine has no clear exit condition
 func startWorker(ch <-chan Job) {
     go func() {
-        for job := range ch {  // ch 永不关闭时，goroutine 永不退出
+        for job := range ch {  // if ch never closes, goroutine never exits
             process(job)
         }
     }()
 }
 ```
 
-**触发条件：** ch 永不关闭，或调用方忘记关闭 channel  
-**修复方向：** 传入 context，使用 `select { case <-ctx.Done(): return }`
+**Trigger condition:** ch never closed, or caller forgot to close the channel
+**Fix direction:** pass in context; use `select { case <-ctx.Done(): return }`
 
-### defer 在循环内
+### defer inside loop
 
 ```go
-// ❌ 危险：defer 不会在每次迭代时执行，循环结束才统一执行
+// DANGEROUS: defer does not execute per iteration; all execute at loop end
 for _, path := range paths {
     f, _ := os.Open(path)
-    defer f.Close()  // 所有文件在循环结束前都不会关闭
+    defer f.Close()  // no files closed until loop ends
 }
 ```
 
-**触发条件：** 循环次数多时，文件描述符耗尽  
-**修复方向：** 将循环体提取为函数，或改用 `f.Close()` 显式关闭
+**Trigger condition:** many iterations cause file descriptor exhaustion
+**Fix direction:** extract loop body into a function, or use explicit `f.Close()`
 
-### time.After 在循环内
+### time.After inside loop
 
 ```go
-// ❌ 危险：每次迭代创建新 Timer，旧 Timer 在触发前不会被 GC
+// DANGEROUS: each iteration creates a new Timer; old Timers not GC before firing
 for {
     select {
-    case <-time.After(5 * time.Second):  // 每次迭代泄漏一个 Timer
+    case <-time.After(5 * time.Second):  // leaks a Timer per iteration
         doWork()
     }
 }
 ```
 
-**触发条件：** 长期运行，Timer 数量线性增长  
-**修复方向：** 在循环外创建 `ticker := time.NewTicker(5 * time.Second)`，循环结束后 `ticker.Stop()`
+**Trigger condition:** long-running; Timer count grows linearly
+**Fix direction:** create `ticker := time.NewTicker(5 * time.Second)` outside the loop; call `ticker.Stop()` after
 
-### 缓存无驱逐
+### Cache without eviction
 
 ```go
-// ❌ 危险：map 只写不删，无 TTL/LRU
+// DANGEROUS: map only writes, never deletes; no TTL/LRU
 var cache = make(map[string][]byte)
 
 func get(key string) []byte {
@@ -77,52 +77,52 @@ func get(key string) []byte {
         return v
     }
     v := fetch(key)
-    cache[key] = v  // 永不删除
+    cache[key] = v  // never deleted
     return v
 }
 ```
 
-**触发条件：** key 空间无限（如用户 ID），运行时间越长内存越高
+**Trigger condition:** key space is unbounded (e.g. user IDs); memory grows over time
 
 ---
 
-## 崩溃 / Panic
+## Crash / Panic
 
-### 空指针解引用
+### Nil pointer dereference
 
 ```go
-// ❌ 危险：链式调用前无 nil 检查
+// DANGEROUS: chained call without nil check
 func getCity(u *User) string {
-    return u.Address.City  // u 或 u.Address 为 nil 时 panic
+    return u.Address.City  // panic if u or u.Address is nil
 }
 ```
 
-**修复方向：** 在每一层解引用前检查 nil
+**Fix direction:** check nil at each level of dereference
 
-### 无保护类型断言
+### Unprotected type assertion
 
 ```go
-// ❌ 危险：类型不匹配直接 panic
+// DANGEROUS: type mismatch causes direct panic
 func process(v interface{}) string {
-    return v.(string)  // v 不是 string 时 panic
+    return v.(string)  // panic if v is not string
 }
 
-// ✅ 安全
+// SAFE
 s, ok := v.(string)
 if !ok {
     return ""
 }
 ```
 
-### goroutine 内无 recover
+### No recover in goroutine
 
 ```go
-// ❌ 危险：goroutine 内 panic 会导致整个进程崩溃
+// DANGEROUS: panic in goroutine crashes the entire process
 go func() {
-    riskyOperation()  // 若 panic，进程崩溃
+    riskyOperation()  // if panic, process crashes
 }()
 
-// ✅ 安全
+// SAFE
 go func() {
     defer func() {
         if r := recover(); r != nil {
@@ -135,73 +135,73 @@ go func() {
 
 ---
 
-## Go 特有陷阱
+## Go-Specific Pitfalls
 
-### 闭包捕获循环变量
+### Closure capturing loop variable
 
 ```go
-// ❌ 危险：所有 goroutine 共享同一个 i
+// DANGEROUS: all goroutines share the same i
 for i := 0; i < 10; i++ {
     go func() {
-        fmt.Println(i)  // 大概率全部打印 10
+        fmt.Println(i)  // most likely all print 10
     }()
 }
 
-// ✅ 安全
+// SAFE
 for i := 0; i < 10; i++ {
-    i := i  // 创建新变量
+    i := i  // create new variable
     go func() {
         fmt.Println(i)
     }()
 }
 ```
 
-### interface nil 检查陷阱
+### interface nil check pitfall
 
 ```go
-// ❌ 危险：(*MyError)(nil) != nil
+// DANGEROUS: (*MyError)(nil) != nil
 func getError() error {
     var err *MyError = nil
-    return err  // 返回的 error 接口不为 nil！
+    return err  // returned error interface is not nil!
 }
 
 if err := getError(); err != nil {
-    // 这里会进入，即使 err 的值是 nil
+    // enters here even though err value is nil
 }
 ```
 
-### slice 共享底层数组
+### slice sharing underlying array
 
 ```go
-// ❌ 危险：append 可能静默修改原 slice
+// DANGEROUS: append may silently modify original slice
 func process(data []byte) []byte {
     result := data[:3]
-    result = append(result, 0xFF)  // 若 cap(data) > 3，会修改 data[3]
+    result = append(result, 0xFF)  // if cap(data) > 3, modifies data[3]
     return result
 }
 ```
 
-**修复方向：** 使用 `data[:3:3]` 限制容量，或 `copy` 创建新 slice
+**Fix direction:** use `data[:3:3]` to limit capacity, or `copy` to create a new slice
 
-### context 未向下透传
+### context not propagated
 
 ```go
-// ❌ 危险：超时/取消信号在中间层丢失
+// DANGEROUS: timeout/cancellation signal lost at intermediate layer
 func handleRequest(ctx context.Context) error {
-    result, err := db.Query("SELECT ...")  // 未传 ctx，无法被取消
+    result, err := db.Query("SELECT ...")  // ctx not passed; cannot be cancelled
     ...
 }
 
-// ✅ 安全
+// SAFE
 result, err := db.QueryContext(ctx, "SELECT ...")
 ```
 
-### HTTP Body 无大小限制
+### HTTP Body without size limit
 
 ```go
-// ❌ 危险：攻击者发超大请求导致 OOM
+// DANGEROUS: attacker sends oversized request causing OOM
 body, err := io.ReadAll(r.Body)
 
-// ✅ 安全
+// SAFE
 body, err := io.ReadAll(io.LimitReader(r.Body, 10*1024*1024))
 ```

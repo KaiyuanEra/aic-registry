@@ -1,186 +1,186 @@
-# description 写法模式库
+# Description Pattern Library
 
-> description 是 skill 触发的**唯一机制**。
-> Claude Code 将所有 skill 的 `name + description` 聚合为 meta-tool 传给 agent，
-> 纯靠 LLM forward pass 语义匹配，无正则、无分类器。
+> The description is the **only trigger mechanism** for a skill.
+> Claude Code aggregates every skill name + description into a meta-tool passed to the agent,
+> relying purely on LLM forward-pass semantic matching — no regex, no classifier.
 >
-> **aic 场景特别说明：** 公司工程师主要用中文提问，LLM 有跨语言语义理解能力，
-> 但口语化中文（"帮我整个 skill"、"跑不起来"）与纯英文 description 的语义距离
-> 比正式中文更远。**所有 skill 的 description 必须中英混写**，用中文覆盖口语触发词，
-> 用英文覆盖技术术语和命令行关键词。
+> **aic note:** Engineers ask questions in natural language. The LLM has cross-lingual semantic
+> understanding, but colloquial phrasing is semantically farther from a formal description.
+> **All skill descriptions must be written in English**, covering both technical terms and the
+> natural-language keywords users actually type.
 
 ---
 
-## 核心公式
+## Core Formula
 
 ```
-[动词短语，描述核心功能].
-Use when [正例场景1], [正例场景2], or when user mentions [关键词列表].
-Do NOT use for [排除场景] or [容易混淆的相邻场景].
+[Verb phrase describing the core function].
+Use when [positive scenario 1], [positive scenario 2], or when user mentions [keyword list].
+Do NOT use for [exclusion scenario] or [easily confused adjacent scenario].
 ```
 
-**三段缺一不可：**
-- 功能段 → 告诉 agent 这个 skill 能做什么
-- `Use when` 段 → 告诉 agent 什么时候应该触发（**必须含中文口语关键词**）
-- `Do NOT use for` 段 → 防止误触发，与相邻 skill 划定边界
+**All three parts are required:**
+- Function segment -> tells the agent what the skill can do
+- Use when segment -> tells the agent when to trigger (must include natural-language keywords users actually type)
+- Do NOT use for segment -> prevents false triggers and draws boundaries with adjacent skills
 
-**中英混写是强制要求，不是建议。** 标准模板：
+**Writing in English is mandatory, not optional.** Standard template:
 
 ```yaml
 description: >
-  <中文功能描述>.
-  Use when <英文技术场景>, <英文技术场景>,
-  or when user mentions <中文口语关键词>, <中文关键词>, or <英文命令/术语>.
-  Do NOT use for <中文排除场景> or <英文排除场景>.
+  <English functional summary>.
+  Use when <English technical scenario>, <English technical scenario>,
+  or when user mentions <natural-language keyword>, <keyword>, or <command/term>.
+  Do NOT use for <English exclusion scenario> or <English exclusion scenario>.
 ```
 
 ---
 
-## 模式一：动作优先型（最常用）
+## Pattern 1: Action-first (most common)
 
-适用于功能单一、动作明确的 skill。
+Best for skills with a single, clear action.
 
 ```yaml
 description: >
-  执行数据库迁移、优化慢查询、管理连接配置。
+  Run database migrations, optimize slow queries, and manage connection configuration.
   Use when working with MySQL/PostgreSQL schema changes, running migrations,
-  or when user mentions 数据库迁移, 慢查询, 连接池, or database performance.
+  or when user mentions database migration, slow query, connection pool, or database performance.
   Do NOT use for Redis, MongoDB, or writing application-layer ORM code.
 ```
 
-**要点：**
-- 动词放最前（执行、生成、分析、管理）
-- `Use when` 里混用中英文关键词，覆盖工程师实际输入习惯
+**Key points:**
+- Lead with a verb (run, generate, analyze, manage)
+- Mix technical terms and natural-language keywords in Use when to cover how engineers actually phrase requests
 
 ---
 
-## 模式二：场景枚举型
+## Pattern 2: Scenario enumeration
 
-适用于 skill 覆盖多个独立场景，每个场景都值得单独说明。
+Best for skills covering multiple independent scenarios, each worth its own mention.
 
 ```yaml
 description: >
-  Docker 容器操作规范。
-  Use when: (1) 编写或审查 Dockerfile, (2) 调试容器启动失败,
-  (3) 配置 docker-compose 多服务, (4) 分析镜像体积.
-  Do NOT use for Kubernetes 部署或 CI/CD 流水线配置。
+  Docker container operation guidelines.
+  Use when: (1) writing or reviewing a Dockerfile, (2) debugging container startup failures,
+  (3) configuring docker-compose multi-service, (4) analyzing image size.
+  Do NOT use for Kubernetes deployment or CI/CD pipeline configuration.
 ```
 
-**要点：**
-- 用编号列出场景，结构清晰
-- 每个场景用动名词短语
+**Key points:**
+- Number the scenarios for clarity
+- Each scenario uses a gerund phrase
 
 ---
 
-## 模式三：角色视角型
+## Pattern 3: Role perspective
 
-适用于 skill 是某个角色或阶段专有的。
+Best for skills specific to a particular role or stage.
 
 ```yaml
 description: >
-  Code review 规范，面向 MR 审查者。
+  Code review guidelines for MR reviewers.
   Use when reviewing a pull request, providing code review comments,
-  checking MR checklist, or when user asks "帮我看看这个 MR" / "review 一下".
+  checking MR checklist, or when user asks to review an MR or take a look at a PR.
   Do NOT use for writing new code or fixing bugs (not in review context).
 ```
 
-**要点：**
-- 明确角色（审查者 vs 开发者），减少跨角色误触发
+**Key points:**
+- Clarify the role (reviewer vs developer) to reduce cross-role false triggers
 
 ---
 
-## 模式四：否定优先型
+## Pattern 4: Negation-first
 
-适用于 skill 名称容易与其他常见任务混淆的情况。先写排除，让 agent 主动识别边界。
+Best when the skill name is easily confused with other common tasks. Lead with exclusions so the agent proactively recognizes boundaries.
 
 ```yaml
 description: >
-  编写新的 aic SKILL.md 文件。
-  Do NOT use for: aic install/remove/sync 命令, 管理已安装的 skill, 或编写非 skill 的文档。
-  Use when creating a new skill from scratch, improving an existing skill's description trigger,
+  Author new aic SKILL.md files.
+  Do NOT use for: aic install/remove/sync commands, managing installed skills, or writing non-skill documentation.
+  Use when creating a new skill from scratch, improving an existing skill description trigger,
   or designing the structure of a SKILL.md for aic compatibility.
 ```
 
-**要点：**
-- 当误触发风险高时，`Do NOT use for` 放最前
-- 适合 meta-skill（skill 关于 skill 本身）
+**Key points:**
+- When false-trigger risk is high, put Do NOT use for first
+- Good for meta-skills (skills about skills)
 
 ---
 
-## 模式五：关键词注入型
+## Pattern 5: Keyword injection
 
-适用于用户提问时高度依赖特定中文术语的场景。
+Best when user questions rely heavily on specific terminology.
 
 ```yaml
 description: >
-  前端构建流水线配置与调试。
-  Use when user mentions 构建失败, webpack 报错, vite 配置, 热更新不生效,
-  打包体积过大, tree shaking, 或 "前端跑不起来".
-  Do NOT use for 后端 API 开发或数据库操作。
+  Frontend build pipeline configuration and debugging.
+  Use when user mentions build failure, webpack error, vite config, hot reload not working,
+  bundle size too large, tree shaking, or frontend will not start.
+  Do NOT use for backend API development or database operations.
 ```
 
-**要点：**
-- 收集工程师实际使用的俗语和口语化表达
-- 引号内的词组更接近真实触发词
+**Key points:**
+- Collect the colloquial expressions engineers actually use
+- Quoted phrases are closer to real trigger words
 
 ---
 
-## 中英文混写规范
+## English Writing Guidelines
 
-公司工程师日常中英混用，description 应同时覆盖两种表达：
+Descriptions should cover the range of expressions users naturally type:
 
 ```yaml
-# ✅ 好：两种语言都覆盖
-Use when user mentions 数据库迁移, schema migration, or running `db migrate`.
+# Good: covers technical terms and natural phrasing
+Use when user mentions database migration, schema migration, or running db migrate.
 
-# ❌ 差：只有英文，中文提问时可能不触发
+# Poor: too narrow, may not trigger on natural-language questions
 Use when user mentions database migration or schema changes.
 ```
 
 ---
 
-## description 长度建议
+## Description Length Guidelines
 
-| 场景 | 建议字数 |
+| Scenario | Suggested word count |
 |------|----------|
-| 功能单一，边界清晰 | 30–60 词 |
-| 多场景，需要列举 | 60–100 词 |
-| 与多个 skill 存在边界模糊 | 100–150 词（加强排除段） |
-| 超过 150 词 | 重新审视 skill 是否职责过宽，考虑拆分 |
+| Single function, clear boundaries | 30 to 60 words |
+| Multiple scenarios, needs enumeration | 60 to 100 words |
+| Boundary ambiguity with multiple skills | 100 to 150 words (strengthen exclusion segment) |
+| Over 150 words | Re-examine whether the skill scope is too broad; consider splitting |
 
 ---
 
-## description 自检清单
+## Description Self-Check Checklist
 
-写完后逐项确认：
+Confirm each item after writing:
 
-- [ ] 以动词或功能名词开头（不以"This skill"或"A tool that"开头）
-- [ ] 包含 `Use when` + 至少 2 个正例场景
-- [ ] 包含 `Do NOT use for` + 至少 1 个排除场景
-- [ ] 覆盖了中文和英文关键词
-- [ ] 通过了 `scripts/description-score.sh` 评分（≥ 60 分）
-- [ ] 没有使用模糊动词（help、assist、handle、deal with）
+- [ ] Starts with a verb or functional noun (not "This skill" or "A tool that")
+- [ ] Includes Use when + at least 2 positive scenarios
+- [ ] Includes Do NOT use for + at least 1 exclusion scenario
+- [ ] Covers natural-language keywords and technical terms
+- [ ] Passes scripts/description-score.sh (score >= 60)
+- [ ] No vague verbs (help, assist, handle, deal with)
 
 ---
 
-## 反面示例对照
+## Anti-Example Comparison
 
 ```yaml
-# ❌ 模糊功能，无触发场景
+# Vague function, no trigger scenario
 description: Helps with database operations.
 
-# ❌ 只写功能，没有触发语境
+# Only describes implementation, no trigger context
 description: Processes and analyzes log files using grep and awk.
 
-# ❌ 过于宽泛，会误触发
+# Too broad, will false-trigger
 description: >
   Assists with backend development tasks.
   Use when doing backend work.
 
-# ✅ 对照改写
+# Corrected rewrite
 description: >
-  分析应用日志、提取错误模式、统计请求量趋势。
+  Analyze application logs, extract error patterns, and summarize request volume trends.
   Use when debugging production errors, analyzing access logs,
-  or when user mentions 日志分析, 错误追踪, log grep, or "帮我看看日志".
+  or when user mentions log analysis, error tracking, log grep, or check the logs.
   Do NOT use for structured database queries or metrics dashboards.
 ```

@@ -1,10 +1,10 @@
-# Context 变量声明与引用
+# Context Variable Declaration and Reference
 
-变量声明属于 `CONTEXT.md` front matter，变量引用属于该 context 的正文文件。两处必须成对维护。
+Variable declarations belong to the CONTEXT.md front matter; variable references belong to the body file of that context. Both must be maintained in pairs.
 
-## 完整示例
+## Complete Example
 
-`CONTEXT.md`：
+CONTEXT.md:
 
 ```yaml
 ---
@@ -25,55 +25,55 @@ env-vars:
 ---
 ```
 
-`content.md`：
+content.md:
 
 ````markdown
-本项目声明可用的命令行工具：
+This project declares the available command-line tools:
 
 ```text
 {{ aic.env.AIC_AVAILABLE_CLI_TOOLS }}
 ```
 ````
 
-## Front Matter 字段
+## Front Matter Fields
 
-### `env-required`
+### env-required
 
-- `true`：该 context 使用变量，必须同时提供非空 `env-vars`。
-- `false`：该 context 不使用变量，不应包含 `env-vars` 或变量占位符。
+- true: this context uses variables; a non-empty env-vars must be provided alongside.
+- false: this context does not use variables; it should not contain env-vars or variable placeholders.
 
-`env-required` 描述的是整个 context 是否使用变量，不等同于单个变量的 `required`。
+env-required describes whether the context as a whole uses variables; it is not equivalent to the required field of an individual variable.
 
-### `env-vars`
+### env-vars
 
-每个变量项使用以下字段：
+Each variable item uses the following fields:
 
-| 字段 | 必填 | 规则 |
+| Field | Required | Rules |
 |---|---|---|
-| `name` | 是 | `^[A-Z][A-Z0-9_]*$`，在同一 context 内唯一 |
-| `description` | 是 | 说明变量提供什么信息以及正文如何使用，不写真实值 |
-| `required` | 是 | YAML 布尔值 `true` 或 `false`，表示是否必须提供该变量 |
-| `default` | 否 | 缺少外部值时使用的非敏感默认值；不能放 token、密码或环境专属地址 |
-| `target` | 是 | context 变量固定写 `context` |
+| name | yes | ^[A-Z][A-Z0-9_]*$, unique within the same context |
+| description | yes | explains what information the variable provides and how the body uses it; no real values |
+| required | yes | YAML boolean true or false, indicating whether the variable must be provided |
+| default | no | non-sensitive default value used when no external value is present; no tokens, passwords, or environment-specific addresses |
+| target | yes | context variables are fixed to context |
 
-不要因为变量标记为 `required: false` 就编造默认值。确有稳定、非敏感且跨项目适用的默认值时才声明 `default`。
+Do not fabricate a default value just because a variable is marked required: false. Only declare default when there is a stable, non-sensitive, cross-project-applicable default.
 
-### 变量名硬性规则
+### Variable Name Hard Rules
 
-Context 与 Skill 使用完全相同的变量名规则：
+Contexts and Skills use the exact same variable name rule:
 
 ```text
 ^[A-Z][A-Z0-9_]*$
 ```
 
-- 必须以大写字母开头。
-- 后续只能使用大写字母、数字和下划线。
-- 区分大小写。
-- 不允许小写字母、连字符、点号或空格。
-- 不允许数字或下划线开头。
-- 同一 `env-vars` 声明中不得重复。
+- Must start with an uppercase letter.
+- Subsequent characters can only be uppercase letters, digits, and underscores.
+- Case-sensitive.
+- No lowercase letters, hyphens, dots, or spaces.
+- No leading digits or underscores.
+- No duplicates within the same env-vars declaration.
 
-合法示例：
+Valid examples:
 
 ```text
 API_KEY
@@ -82,7 +82,7 @@ AIC_AVAILABLE_CLI_TOOLS
 MODEL_V2_ENDPOINT
 ```
 
-非法示例：
+Invalid examples:
 
 ```text
 api_key
@@ -92,17 +92,17 @@ API.KEY
 _API_KEY
 ```
 
-## 正文占位符
+## Body Placeholder
 
-标准语法：
+Standard syntax:
 
 ```text
 {{ aic.env.VAR_NAME }}
 ```
 
-允许在大括号内增加空格，例如 `{{aic.env.VAR_NAME}}`，但统一输出带空格的标准形式。变量名必须与 `env-vars[].name` 完全一致并区分大小写。
+Extra spaces inside the braces are allowed, e.g. {{aic.env.VAR_NAME}}, but the standard form with spaces is output uniformly. The variable name must exactly match env-vars[].name and is case-sensitive.
 
-以下写法无效：
+The following are invalid:
 
 ```text
 {{ VAR_NAME }}
@@ -112,21 +112,21 @@ ${VAR_NAME}
 {{ aic.env.var_name }}
 ```
 
-## 一致性规则
+## Consistency Rules
 
-生成或修改 context 时必须同时检查：
+When generating or modifying a context, simultaneously check:
 
-1. 每个 `{{ aic.env.NAME }}` 都有且只有一个同名 `env-vars` 声明。
-2. 每个 `env-vars` 声明都至少在正文中引用一次；不再使用时删除声明。
-3. 存在任何声明或占位符时，`env-required` 为 `true`。
-4. `env-required: true` 时 `env-vars` 非空。
-5. `env-required: false` 时不存在 `env-vars` 和占位符。
-6. 新增、删除或修改变量声明属于 context 制品变更，必须递增 `version` 并重新生成索引。
-7. 变量值永远不写入 registry；registry 只保存声明和占位符。
+1. Each {{ aic.env.NAME }} has exactly one env-vars declaration with the same name.
+2. Each env-vars declaration is referenced at least once in the body; remove the declaration when no longer used.
+3. When any declaration or placeholder exists, env-required is true.
+4. When env-required: true, env-vars is non-empty.
+5. When env-required: false, no env-vars or placeholders exist.
+6. Adding, removing, or modifying a variable declaration is a context artifact change; version must be bumped and the index regenerated.
+7. Variable values are never written to the registry; the registry stores only declarations and placeholders.
 
-## 修改示例
+## Modification Example
 
-新增 `PROJECT_TEST_COMMAND` 时，应在同一次修改中完成：
+When adding PROJECT_TEST_COMMAND, complete all of the following in the same modification:
 
 ```yaml
 env-required: true
@@ -137,10 +137,10 @@ env-vars:
     target: context
 ```
 
-并在 `content.md` 引用：
+And reference it in content.md:
 
 ```text
 {{ aic.env.PROJECT_TEST_COMMAND }}
 ```
 
-最后递增 `CONTEXT.md.version`，运行 `make index`，再执行 context 校验脚本。
+Finally, bump CONTEXT.md.version, run make index, then run the context validation script.

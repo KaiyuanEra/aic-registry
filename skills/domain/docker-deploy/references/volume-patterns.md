@@ -1,8 +1,9 @@
-# 常见挂载模式参考
 
-## 基础挂载模式
+# Common Mount Pattern Reference
 
-### 1. 数据持久化（Named Volume）
+## Basic Mount Patterns
+
+### 1. Data Persistence (Named Volume)
 
 ```yaml
 volumes:
@@ -13,9 +14,9 @@ volumes:
     driver: local
 ```
 
-适用：数据库文件、应用状态数据，需要跨容器重启保留。
+Use case: database files, application state data that needs to survive container restarts.
 
-### 2. 宿主机目录挂载（Bind Mount）
+### 2. Host Directory Mount (Bind Mount)
 
 ```yaml
 volumes:
@@ -23,9 +24,9 @@ volumes:
   - /data/{app-name}/config:/app/config
 ```
 
-适用：日志收集（宿主机日志聚合）、配置文件热更新。
+Use case: log collection (host log aggregation), config file hot reload.
 
-### 3. 时区同步（只读）
+### 3. Timezone Sync (read-only)
 
 ```yaml
 volumes:
@@ -33,22 +34,22 @@ volumes:
   - /etc/timezone:/etc/timezone:ro
 ```
 
-适用：所有服务，确保容器时区与宿主机一致。
+Use case: all services, ensuring container timezone matches the host.
 
-### 4. 配置文件注入
+### 4. Config File Injection
 
 ```yaml
 volumes:
   - ./config/app.yaml:/app/config/app.yaml:ro
 ```
 
-适用：需要在不重建镜像的情况下修改配置。
+Use case: modifying config without rebuilding the image.
 
-## 常见路径约定
+## Common Path Conventions
 
-| 用途 | 容器内路径 | 宿主机路径建议 |
+| Purpose | Container path | Suggested host path |
 |------|-----------|----------------|
-| 应用数据 | `/app/data` | `/data/{app-name}/data` |
-| 日志 | `/app/data/logs` | `/data/logs/{app-name}` |
-| 配置 | `/app/config` | `/data/{app-name}/config` |
-| 上传文件 | `/app/uploads` | `/data/{app-name}/uploads` |
+| App data | `/app/data` | `/data/{app-name}/data` |
+| Logs | `/app/data/logs` | `/data/logs/{app-name}` |
+| Config | `/app/config` | `/data/{app-name}/config` |
+| Uploads | `/app/uploads` | `/data/{app-name}/uploads` |

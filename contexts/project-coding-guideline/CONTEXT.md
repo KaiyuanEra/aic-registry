@@ -1,7 +1,11 @@
 ---
 name: project-coding-guideline
 version: 1.0.2
-description: 默认注入到项目 context 文件的 AI 编码行为准则中文模板。Use when 项目需要默认的 AI 编码行为规范，或用户提及 默认编码准则、AI 编码行为、项目级编码规范、AGENTS.md 默认内容、CLAUDE.md 默认内容。
+description: >
+  Default AI coding guideline template injected into project context files.
+  Use when a project needs default AI coding behavior rules, or when user mentions default coding
+  guidelines, AI coding behavior, project-level coding conventions, AGENTS.md default content,
+  or CLAUDE.md default content.
 targets:
   - CLAUDE.md
   - AGENTS.md
@@ -10,11 +14,11 @@ content: content.md
 env-required: true
 env-vars:
   - name: AIC_AVAILABLE_CLI_TOOLS
-    description: 项目声明可用的本地命令行工具清单。
+    description: List of local command-line tools declared as available by the project.
     required: false
     target: context
 ---
 
-# 项目级 AI 编码行为准则
+# Project-Level AI Coding Guideline
 
-本 context 提供 aic 管理项目的默认 AI 编码行为准则中文模板。
+This context provides the default AI coding guideline template for aic-managed projects.

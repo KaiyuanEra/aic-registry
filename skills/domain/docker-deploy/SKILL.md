@@ -1,59 +1,59 @@
 ---
 name: docker-deploy
 version: 1.1.1
-description: 生成 Docker 本地部署所需的全套文件（Dockerfile、docker-compose.yml、build.sh、.dockerignore），输出到 docker/ 目录。Use when 帮我生成 Docker 部署文件、生成 docker-compose、创建 build.sh 构建脚本、初始化 docker 目录，or when user mentions Dockerfile / docker-compose / 容器部署 / build.sh。Do NOT use for K8s 部署配置生成（→ k8s-deploy）、CI/CD 流水线配置（→ cicd-pipeline）、只讨论 Docker 概念不需要生成文件。
+description: Generate the full set of Docker local deployment files (Dockerfile, docker-compose.yml, build.sh, .dockerignore), output to the docker/ directory. Use when generating Docker deployment files, creating docker-compose, creating a build.sh script, initializing a docker directory, or when user mentions Dockerfile, docker-compose, container deployment, or build.sh. Do NOT use for K8s deployment config generation (use k8s-deploy), CI/CD pipeline config (use cicd-pipeline), or just discussing Docker concepts without needing to generate files.
 env-required: false
 ---
 
 # docker-deploy
 
-根据用户描述的项目信息，生成 Docker 本地部署所需的全套文件。
+Generate the full set of Docker local deployment files based on user-provided project information.
 
-**不负责：** Dockerfile 内部的编译逻辑。只负责生成文件骨架、填充部署相关配置。
-
----
-
-## 输出目录结构
-
-```
-项目根目录/
-├── docker/
-│   ├── .dockerignore           # 全局 dockerignore
-│   ├── Dockerfile              # 多阶段构建骨架
-│   ├── env.sh                  # 构建变量（PROGRAM / VERSION / ENV / GOPROXY / APT_MIRROR）
-│   ├── build.sh                # 构建入口脚本（读取 env.sh）
-│   └── docker-compose.yml      # 本地运行配置
-│
-└── Makefile                    # 构建命令入口（由 cicd-pipeline 维护）
-```
+**Not responsible for:** Dockerfile internal compilation logic. Only generates the file skeleton and fills in deployment-related configuration.
 
 ---
 
-## 文件生成规范
+## Output Directory Structure
+
+```
+project root/
++-- docker/
+|   +-- .dockerignore           # global dockerignore
+|   +-- Dockerfile              # multi-stage build skeleton
+|   +-- env.sh                  # build variables (PROGRAM / VERSION / ENV / GOPROXY / APT_MIRROR)
+|   +-- build.sh                # build entry script (reads env.sh)
+|   +-- docker-compose.yml      # local runtime config
+|
++-- Makefile                    # build command entry (maintained by cicd-pipeline)
+```
+
+---
+
+## File Generation Spec
 
 ### `docker/env.sh`
 
 ```bash
 #!/bin/bash
-# 镜像构建配置
-# 生成时间：{timestamp}
+# Image build config
+# Generated: {timestamp}
 
-PROGRAM={registry}/{team}/{app-name}  # 完整镜像名，含仓库地址
-VERSION={x.y.z}                        # 语义化版本号
-ENV=prod                               # 运行环境：prod / dev / staging
-GOPROXY=https://goproxy.cn,https://goproxy.io,direct  # Go 模块代理（国内构建必须）
-APT_MIRROR=mirrors.aliyun.com          # apt 国内镜像源（可选：mirrors.tuna.tsinghua.edu.cn）
+PROGRAM={registry}/{team}/{app-name}  # full image name, including registry
+VERSION={x.y.z}                        # semantic version
+ENV=prod                               # runtime env: prod / dev / staging
+GOPROXY=https://goproxy.cn,https://goproxy.io,direct  # Go module proxy (required for builds in China)
+APT_MIRROR=mirrors.aliyun.com          # apt mirror (optional: mirrors.tuna.tsinghua.edu.cn)
 ```
 
-**要求：**
-- `PROGRAM` 格式严格为 `{registry}/{namespace}/{image-name}`，三段式
-- 不在此文件中放敏感信息（密码、token 等）
+**Requirements:**
+- `PROGRAM` format must be strictly `{registry}/{namespace}/{image-name}`, three segments
+- No sensitive info (passwords, tokens, etc.) in this file
 
 ### `docker/Dockerfile`
 
-**要求：**
-- 多阶段构建（builder + runtime），builder 阶段负责编译，runtime 阶段只复制产物
-- 必须声明 `ARG GOPROXY` 并紧跟 `ENV GOPROXY=$GOPROXY`，位置在 `go mod download` 之前：
+**Requirements:**
+- Multi-stage build (builder + runtime); builder stage compiles, runtime stage only copies artifacts
+- Must declare `ARG GOPROXY` followed by `ENV GOPROXY=$GOPROXY`, positioned before `go mod download`:
 
 ```dockerfile
 ARG GOPROXY=https://goproxy.cn,https://goproxy.io,direct
@@ -62,29 +62,29 @@ ENV GOPROXY=$GOPROXY
 RUN go mod download
 ```
 
-- `go mod download` 或 `go mod tidy` 前必须有上述两行，否则国内容器构建会因无法访问 golang.org 而失败
-- `ARG VERSION` 和 `ARG ENV` 同样需要声明，供运行时标识使用
-- runtime 阶段使用最小基础镜像（`alpine` 或 `distroless`），不包含 Go 工具链
+- `go mod download` or `go mod tidy` must be preceded by the above two lines, otherwise container builds in China will fail due to inability to access golang.org
+- `ARG VERSION` and `ARG ENV` must also be declared for runtime identification
+- Runtime stage uses a minimal base image (`alpine` or `distroless`), without the Go toolchain
 
-**国内包管理源配置（凡有 `apt-get` / `apk` / `pip` 等安装命令，必须在安装前切换国内源）：**
+**Mirror source config for package managers (whenever apt-get / apk / pip install commands exist, switch to a mirror before installing):**
 
-镜像源通过 `ARG APT_MIRROR` 传入，默认阿里源，构建时可覆盖：
+The mirror is passed via `ARG APT_MIRROR`, defaulting to Aliyun, overridable at build time:
 
 ```dockerfile
 ARG APT_MIRROR=mirrors.aliyun.com
 ```
 
-| 基础镜像 | 包管理器 | 国内源配置方式 |
+| Base image | Package manager | Mirror config method |
 |----------|----------|----------------|
-| `debian` / `ubuntu` | `apt-get` | 用 `ARG APT_MIRROR` 替换源地址，**必须用 HTTP 不用 HTTPS**（ca-certificates 未装时 HTTPS 握手失败） |
-| `alpine` | `apk` | `sed` 替换 `dl-cdn.alpinelinux.org` 为 `$APT_MIRROR` |
+| `debian` / `ubuntu` | `apt-get` | Replace source URL with `ARG APT_MIRROR`; **must use HTTP not HTTPS** (HTTPS handshake fails when ca-certificates is not installed) |
+| `alpine` | `apk` | `sed` replace `dl-cdn.alpinelinux.org` with `$APT_MIRROR` |
 | `python` | `pip` | `-i http://$APT_MIRROR/pypi/simple --trusted-host $APT_MIRROR` |
 
-debian/ubuntu 示例：
+debian/ubuntu example:
 
 ```dockerfile
 ARG APT_MIRROR=mirrors.aliyun.com
-# 用 HTTP 而非 HTTPS：ca-certificates 未安装时 HTTPS 握手会失败
+# Use HTTP not HTTPS: HTTPS handshake fails when ca-certificates is not installed
 RUN sed -i "s|http://deb.debian.org/debian|http://${APT_MIRROR}/debian|g" /etc/apt/sources.list.d/debian.sources \
     && sed -i "s|http://security.debian.org/debian-security|http://${APT_MIRROR}/debian-security|g" /etc/apt/sources.list.d/debian.sources \
     && apt-get update \
@@ -92,7 +92,7 @@ RUN sed -i "s|http://deb.debian.org/debian|http://${APT_MIRROR}/debian|g" /etc/a
     && rm -rf /var/lib/apt/lists/*
 ```
 
-alpine 示例：
+alpine example:
 
 ```dockerfile
 ARG APT_MIRROR=mirrors.aliyun.com
@@ -100,60 +100,59 @@ RUN sed -i "s/dl-cdn.alpinelinux.org/${APT_MIRROR}/g" /etc/apk/repositories \
     && apk add --no-cache tzdata ca-certificates
 ```
 
-**规则：** 检测到 Dockerfile 中有任何包安装命令时，自动在该 `RUN` 块前声明 `ARG APT_MIRROR` 并插入对应的源替换命令，并在注释中注明"国内镜像源，HTTP 避免证书问题"。
+**Rule:** When any package install command is detected in the Dockerfile, automatically declare `ARG APT_MIRROR` before that `RUN` block, insert the corresponding source replacement command, and add a comment noting "mirror source, HTTP to avoid certificate issues".
 
 ### `docker/build.sh`
 
-参考 `assets/build.sh.template`。
+See `assets/build.sh.template`.
 
-**要求：**
-- `set -e` 必须保留
-- 参数解析保持 `while/case` 结构
-- 所有用户可见提示信息使用中文
+**Requirements:**
+- `set -e` must be preserved
+- Argument parsing keeps the `while/case` structure
+- All user-visible messages in English
 
 ### `docker/docker-compose.yml`
 
-参考 `assets/docker-compose.yml.template`。
+See `assets/docker-compose.yml.template`.
 
-**要求：**
-- 不写 `version:` 字段（新版 Docker Compose 已废弃，写了会有 WARN）
-- `image` 字段必须使用 `${VARIABLE:-default}` 格式
-- 必须包含 `healthcheck` 配置
-- 日志配置默认 `max-size: 100m / max-file: 5`
-- 时区：只挂载 `/etc/localtime:ro`，同时设置环境变量 `TZ=Asia/Shanghai`；**不挂载 `/etc/timezone`**（部分系统该文件不存在或类型不符，挂载会报 OCI runtime 错误）
-- 敏感变量不写入此文件，引用外部 `.env` 文件
+**Requirements:**
+- Do not write a `version:` field (deprecated in new Docker Compose; writing it produces a warning)
+- `image` field must use `${VARIABLE:-default}` format
+- Must include `healthcheck` config
+- Log config defaults to `max-size: 100m / max-file: 5`
+- Timezone: only mount `/etc/localtime:ro` and set env var `TZ=Asia/Shanghai`; **do not mount `/etc/timezone`** (on some systems this file does not exist or has the wrong type; mounting causes OCI runtime errors)
+- Sensitive variables are not written in this file; reference an external `.env` file
 
 ### `docker/.dockerignore`
 
-参考 `assets/.dockerignore.template`。
+See `assets/.dockerignore.template`.
 
 ---
 
-## 文件操作安全规则
+## File Operation Safety Rules
 
-| 文件 | 策略 |
+| File | Strategy |
 |------|------|
-| `docker/env.sh` | 已存在时只修改用户明确要求的字段，其他保留 |
-| `docker/docker-compose.yml` | 整体生成（可覆盖） |
-| `docker/.dockerignore` | 整体生成（可覆盖） |
-| `docker/build.sh` | 整体生成（可覆盖） |
-| `docker/Dockerfile` | 已存在时询问用户是否覆盖 |
+| `docker/env.sh` | When it exists, only modify fields explicitly requested by the user; keep the rest |
+| `docker/docker-compose.yml` | Generate wholesale (may overwrite) |
+| `docker/.dockerignore` | Generate wholesale (may overwrite) |
+| `docker/build.sh` | Generate wholesale (may overwrite) |
+| `docker/Dockerfile` | When it exists, ask the user whether to overwrite |
 
-任何写操作前，展示将要进行的操作，等待用户确认后再执行。
-
----
-
-## 敏感信息处理
-
-- `docker-compose.yml` → 引用外部 `.env` 文件，或注释说明通过环境变量注入
-- 发现用户提供的信息中包含明显的密码或 token 时，提示用户不要将此信息放入代码仓库，在生成文件中用占位符代替
+Before any write operation, show what will be done and wait for user confirmation.
 
 ---
 
-## 执行后提示
+## Sensitive Information Handling
+
+- `docker-compose.yml` -> reference an external `.env` file, or comment that values are injected via environment variables
+- When the user-provided info contains obvious passwords or tokens, remind the user not to put this info in the code repository; use placeholders in generated files
+
+---
+
+## Post-Execution Prompt
 
 ```
-docker/ 目录已生成，构建命令：./docker/build.sh
-如需 K8s 部署配置，继续执行 k8s-deploy skill
-如需更新 CI/CD，继续执行 cicd-pipeline skill
+docker/ directory generated, build command: ./docker/build.sh
+For K8s deployment config, continue with the k8s-deploy skill
 ```

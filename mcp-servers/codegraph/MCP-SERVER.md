@@ -25,10 +25,10 @@ tags:
 ---
 # CodeGraph MCP
 
-[CodeGraph](https://github.com/colbymchenry/codegraph) 为代码仓库建立结构化索引，并通过 MCP 提供代码关系与调用路径分析能力。
+[CodeGraph](https://github.com/colbymchenry/codegraph) builds a structured index for code repositories and provides code relationship and call path analysis capabilities through MCP.
 
-本定义由 aic 按项目需求添加和管理。不需要执行 `codegraph install --target=cursor,claude --yes` 等直接修改全局客户端配置的安装命令，避免向全局配置注入 MCP server，并降低后续定位、更新和卸载配置的成本。
+This definition is added and managed by aic per project requirements. Do not run installation commands like `codegraph install --target=cursor,claude --yes` that directly modify global client config; this avoids injecting MCP servers into global config and reduces the cost of subsequent troubleshooting, updating, and uninstalling config.
 
-使用前应确保当前环境可以执行 `codegraph init` 命令；客户端连接时由 aic 生成项目级配置并启动 `codegraph serve --mcp`。
+Before use, ensure the current environment can execute the `codegraph init` command; the client connection is handled by aic generating project-level config and starting `codegraph serve --mcp`.
 
-Windows 环境下，本定义声明了 `codegraph.exe serve --mcp` 作为 stdio 启动命令。若本机安装方式提供的是其他命令名或 wrapper，请在 registry 源定义中显式调整 `platforms.windows.command` 和 `platforms.windows.args`，aic 不会自动推断 `.exe`、`.cmd` 或 shell 包装。
+On Windows, this definition declares `codegraph.exe serve --mcp` as the stdio launch command. If your local installation provides a different command name or wrapper, explicitly adjust `platforms.windows.command` and `platforms.windows.args` in the registry source definition; aic does not auto-infer .exe, .cmd, or shell wrappers.

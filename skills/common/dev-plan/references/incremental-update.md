@@ -1,118 +1,118 @@
-# 增量更新操作规范
 
-## 核心原则
+# Incremental Update Operation Spec
 
-**只追加，不重写历史。** AI 工具可通过历史状态回溯项目进度，一旦重写，上下文链断裂。
+## Core Principle
 
-**文件路径约定：** dev-plan.md 始终位于项目根目录，不随增量更新移动。
+**Append only; do not rewrite history.** AI tools can trace project progress through historical state; once rewritten, the context chain breaks.
+
+**File path convention:** dev-plan.md is always at the project root; does not move with incremental updates.
 
 ---
 
-## 操作允许矩阵
+## Operation Allowance Matrix
 
-| 操作 | 允许 | 说明 |
+| Operation | Allowed | Notes |
 |------|------|------|
-| 追加新 Phase | ✅ | 编号接续，内容全新 |
-| 追加新 Task | ✅ | 在对应 Phase 末尾追加 |
-| 修改未开始 Task 的内容 | ✅ | 原内容加删除线，再写新内容 |
-| 追加变更记录 | ✅ | 只追加，不修改历史条目（超过 5 条时截断最早的） |
-| 更新架构图 / 项目结构 | ✅ | 允许全量更新，须附变更说明 |
-| 修改已完成 Task（✅ 标记）| ⚠️ | 只允许追加 Note，不改原内容 |
-| 修改已有 Issue 编号 | ❌ | 禁止，与 GitLab 状态会不一致 |
-| 删除历史变更记录 | ❌ | 禁止（超过 5 条时自动截断最早的，不手动删除） |
-| 重写已完成 Phase 内容 | ❌ | 禁止（已完成 Phase 应通过归档机制处理） |
-| 修改 dev-plan.md 文件位置 | ❌ | 禁止，始终在项目根目录 |
+| Append new Phase | yes | numbering continues; content is new |
+| Append new Task | yes | append at the end of the corresponding Phase |
+| Modify not-started Task content | yes | strikethrough original content; write new content |
+| Append change record | yes | append only; do not modify historical entries (truncate oldest when over 5) |
+| Update architecture diagram / project structure | yes | full update allowed; must include change description |
+| Modify completed Task (checkmark) | caution | only Notes can be appended; do not modify original content |
+| Modify existing Issue number | no | forbidden; would be inconsistent with GitLab status |
+| Delete historical change records | no | forbidden (auto-truncate oldest when over 5; do not manually delete) |
+| Rewrite completed Phase content | no | forbidden (completed Phases should be handled via archiving) |
+| Move dev-plan.md file location | no | forbidden; always at project root |
 
 ---
 
-## 变更记录格式
+## Change Record Format
 
-每次增量更新必须在文件头部 `## 变更记录` 表格追加一行：
+Each incremental update must append a row to the `## Change Log` table at the file header:
 
 ```markdown
-## 变更记录
-| 版本 | 日期       | 变更内容                          |
+## Change Log
+| Version | Date       | Change description                          |
 |------|------------|-----------------------------------|
-| v1   | 2026-01-10 | 初始版本，3 个 Phase，12 个 Task   |
-| v2   | 2026-01-15 | 新增 Phase 4（aic env 命令），3 个新 Task |
-| v3   | 2026-01-20 | 调整 Task 2.3 预估（4h → 6h），新增技术风险说明 |
+| v1   | 2026-01-10 | Initial version, 3 Phases, 12 Tasks   |
+| v2   | 2026-01-15 | Added Phase 4 (aic env commands), 3 new Tasks |
+| v3   | 2026-01-20 | Adjusted Task 2.3 estimate (4h -> 6h), added technical risk note |
 ```
 
-**规则：**
-- 版本号递增（v1 → v2 → v3 ...）
-- 日期为 YYYY-MM-DD 格式
-- 变更内容简明扼要（一句话或两句话）
-- 只保留最近 5 条记录，更早的自动截断
+**Rules:**
+- Version number increments (v1 -> v2 -> v3 ...)
+- Date in YYYY-MM-DD format
+- Change description concise (one or two sentences)
+- Keep only the latest 5 records; older ones auto-truncated
 
 ---
 
-## 修改现有 Task 内容
+## Modifying Existing Task Content
 
-当 Task 内容有变更但 Task 尚未开始时，保留原内容并标注：
+When Task content changes but the Task has not started, preserve original content and annotate:
 
 ```markdown
-#### Task 2.3: 实现 GitLab 仓库 clone/pull
-- **目标：** ~~从 GitLab 拉取到本地 cache~~ 支持 SSH 和 HTTPS 双协议拉取，超时 30s
-- **涉及文件：** `internal/registry/client.go`
-- **输入：** Task 2.1 完成
-- **输出：** `FetchRegistry(branch string) error`
-- **预估：** ~~4小时~~ 6小时（HTTPS 证书处理比预期复杂）
-- **Issue：** #（待创建）
-- **注意：** SSH 私钥路径从 ~/.aic/config.toml 读取；HTTPS 需处理自签名证书场景
+#### Task 2.3: Implement GitLab repository clone/pull
+- **Goal:** ~~Pull from GitLab to local cache~~ Support SSH and HTTPS dual-protocol pull; 30s timeout
+- **Files involved:** `internal/registry/client.go`
+- **Input:** Task 2.1 completed
+- **Output:** `FetchRegistry(branch string) error`
+- **Estimate:** ~~4 hours~~ 6 hours (HTTPS certificate handling more complex than expected)
+- **Issue:** #(pending)
+- **Note:** SSH private key path read from ~/.aic/config.toml; HTTPS needs self-signed cert handling
 ```
 
 ---
 
-## 追加 Note 到已完成 Task
+## Appending Note to Completed Task
 
-已有 Issue 编号或 ✅ 标记的 Task，只能在末尾追加 Note：
+Tasks with existing Issue numbers or checkmark marks can only have Notes appended at the end:
 
 ```markdown
-#### Task 1.2: 实现 .aicrc 读写
-- **目标：** ...（原内容不变）
-- **Issue：** #12 ✅
-- **Note（2026-01-18）：** 发现 BOM 编码问题，已在 #28 中修复
+#### Task 1.2: Implement .aicrc read/write
+- **Goal:** ... (original content unchanged)
+- **Issue:** #12 completed
+- **Note (2026-01-18):** Found BOM encoding issue; fixed in #28
 ```
 
 ---
 
-## 阶段状态标记
+## Stage Status Markers
 
-Phase 完成时在标题后添加状态标记（不修改 Phase 内部 Task）：
+When a Phase completes, add a status marker after the title (do not modify Tasks within the Phase):
 
 ```markdown
-### Phase 1: 核心基础模块 | 预估：5天 | 优先级：P0 ✅ 已完成
+### Phase 1: Core Foundation Modules | Estimated: 5 days | Priority: P0 | completed
 
-### Phase 2: install 命令 | 预估：7天 | 优先级：P0 🔄 进行中
+### Phase 2: install command | Estimated: 7 days | Priority: P0 | in progress
 
-### Phase 3: TUI 界面 | 预估：8天 | 优先级：P1 ⏳ 未开始
+### Phase 3: TUI interface | Estimated: 8 days | Priority: P1 | not started
 ```
 
 ---
 
-## 与归档机制的关系
+## Relationship with Archiving
 
-当 Phase 完成后，不应继续在 dev-plan.md 中修改该 Phase 的内容。而是：
+When a Phase completes, do not continue modifying that Phase content in dev-plan.md. Instead:
 
-1. 确认 Phase 内所有 Task 都标记为 ✅ 已完成
-2. 执行 Phase 归档操作（见 references/archive-guide.md）
-3. Phase 内容移至 `docs/dev-plan-archive/phase-{N}.md`
-4. dev-plan.md 中删除该 Phase 块
+1. Confirm all Tasks within the Phase are marked as completed
+2. Execute Phase archive operation (see references/archive-guide.md)
+3. Phase content moves to `docs/dev-plan-archive/phase-{N}.md`
+4. Delete the Phase block from dev-plan.md
 
-这样可以保持活跃文档长度有界，同时保留完整的历史记录。
+This keeps the active document length bounded while preserving complete history.
 
 ---
 
-## 增量更新 Checklist
+## Incremental Update Checklist
 
-执行增量更新前确认：
+Confirm before executing incremental update:
 
-- [ ] 明确本次变更的范围（哪些 Phase/Task 受影响）
-- [ ] 变更记录表格已追加新条目（版本号 +1）
-- [ ] 未开始的 Task 修改：原内容有删除线，新内容已写
-- [ ] 已完成 Task：只追加了 Note，未改原内容
-- [ ] 新增 Task 的编号接续现有最大编号
-- [ ] 架构图/项目结构若有更新：章节末尾注明了变更日期和原因
-- [ ] dev-plan.md 文件位置仍在项目根目录（未移动）
-- [ ] 如果 dev-plan.md 超过 400 行，考虑执行 Phase 归档而不是继续增量更新
-
+- [ ] Scope of this change is clear (which Phases/Tasks are affected)
+- [ ] Change log table has a new entry appended (version number +1)
+- [ ] Not-started Task modifications: original content has strikethrough; new content written
+- [ ] Completed Tasks: only Notes appended; original content unchanged
+- [ ] New Task numbering continues from the current maximum
+- [ ] Architecture diagram/project structure updates: change date and reason noted at section end
+- [ ] dev-plan.md file location is still at project root (not moved)
+- [ ] If dev-plan.md exceeds 400 lines, consider executing Phase archive instead of continuing incremental updates

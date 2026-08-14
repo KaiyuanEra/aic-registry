@@ -1,30 +1,30 @@
-# {App Name} 部署说明
+# {App Name} Deployment Guide
 
-生成时间：{timestamp}
+Generated: {timestamp}
 
-## 快速启动
+## Quick Start
 
 ```bash
-# 构建镜像
+# Build image
 ./docker/build.sh
 
-# 启动服务
+# Start services
 cd docker && docker-compose up -d
 
-# 查看状态
+# Check status
 docker-compose ps
 docker-compose logs -f
 ```
 
-## 配置说明
+## Configuration
 
-| 配置项   | 默认值     | 说明           |
-| -------- | ---------- | -------------- |
-| 端口     | {port}     | 对外暴露端口   |
-| 数据目录 | /app/data  | 持久化数据     |
-| 日志目录 | /data/logs | 宿主机日志路径 |
+| Setting | Default | Description |
+| ------- | ------- | ----------- |
+| Port | {port} | Exposed port |
+| Data dir | /app/data | Persistent data |
+| Log dir | /data/logs | Host log path |
 
-## 注意事项
+## Notes
 
-- 挂载路径需根据宿主机实际情况修改 `docker-compose.yml` 中的 volumes
-- 敏感配置通过环境变量注入，不存入代码仓库
+- Adjust volume mount paths in `docker-compose.yml` to match your host environment
+- Sensitive configuration is injected via environment variables, never committed to the repository

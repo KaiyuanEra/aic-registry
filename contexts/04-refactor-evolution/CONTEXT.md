@@ -1,7 +1,7 @@
 ---
 name: 04-refactor-evolution
 version: 1.0.0
-description: 重构与演进期项目使用的中文项目级长期记忆，强调新旧架构边界、迁移验证和临时规则失效条件。
+description: Project-level long-term memory for refactor and evolution stage projects, emphasizing old/new architecture boundaries, migration validation, and temporary rule expiry conditions.
 targets:
   - CLAUDE.md
   - AGENTS.md
@@ -10,6 +10,6 @@ content: content.md
 env-required: false
 ---
 
-# 重构与演进期 Context
+# Refactor and Evolution Context
 
-用于新旧技术栈或架构并存、系统处于持续迁移过程中的项目阶段。
+For project stages where old and new tech stacks or architectures coexist, and the system is in a continuous migration process.

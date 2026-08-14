@@ -1,86 +1,86 @@
-# glab CLI 降级方案
+# glab CLI Fallback
 
-> 当 GITLAB_TOKEN 未配置但系统中有 `glab` 时使用。
-> glab 需要预先执行 `glab auth login` 完成认证。
+> Used when GITLAB_TOKEN is not configured but glab is available on the system.
+> glab requires prior `glab auth login` for authentication.
 
 ---
 
-## 检测 glab 是否可用
+## Check if glab Is Available
 
 ```bash
 if command -v glab &>/dev/null && glab auth status &>/dev/null 2>&1; then
-  echo "glab 可用，使用 CLI 模式"
+  echo "glab available, using CLI mode"
 else
-  echo "glab 不可用，请配置 GITLAB_TOKEN 或安装 glab"
+  echo "glab not available; configure GITLAB_TOKEN or install glab"
 fi
 ```
 
 ---
 
-## glab 常用命令
+## Common glab Commands
 
-### Milestone（glab 暂不支持直接管理 Milestone）
+### Milestone (glab does not yet support direct milestone management)
 
-glab CLI 目前不支持 Milestone 的创建和管理，此场景必须回退到 Web API。
+glab CLI currently does not support milestone creation and management; this scenario must fall back to the Web API.
 
 ---
 
-### Issue 操作
+### Issue Operations
 
 ```bash
-# 创建 Issue
+# Create issue
 glab issue create \
-  --title "[Phase 1] 实现 SKILL.md frontmatter 解析" \
-  --description "## 任务目标
-解析 SKILL.md 的 YAML 头..." \
+  --title "[Phase 1] Implement SKILL.md frontmatter parsing" \
+  --description "## Task Objective
+Parse the YAML header of SKILL.md..." \
   --label "phase-1,feat" \
-  --milestone "Phase 1: 核心基础模块"
+  --milestone "Phase 1: Core Foundation Modules"
 
-# 查看 Issue 列表
+# List issues
 glab issue list --state opened
 
-# 关闭 Issue
+# Close issue
 glab issue close 42
 ```
 
 ---
 
-## glab 安装方式
+## glab Installation
 
 ```bash
 # macOS
 brew install glab
 
-# Linux（通过包管理器）
+# Linux (via package manager)
 sudo apt install glab        # Debian/Ubuntu
 sudo dnf install glab        # Fedora
 
-# 通用（下载二进制）
-# 访问 https://gitlab.com/gitlab-org/cli/-/releases 获取最新版本
+# Generic (download binary)
+# Visit https://gitlab.com/gitlab-org/cli/-/releases for the latest version
 ```
 
 ---
 
-## 认证配置
+## Authentication Configuration
 
 ```bash
-# 配置公司内部 GitLab
+# Configure internal GitLab
 glab auth login --hostname git.ifogging.cn
 
-# 验证认证状态
+# Verify auth status
 glab auth status
 ```
 
 ---
 
-## 降级时的功能限制
+## Fallback Limitations
 
-| 功能 | Web API | glab CLI |
+| Feature | Web API | glab CLI |
 |------|---------|----------|
-| 创建 Milestone | ✅ | ❌（需用 API） |
-| 创建 Issue | ✅ | ✅ |
-| 关联 Issue 到 Milestone | ✅ | ⚠️（通过 --milestone 名称，需已存在） |
-| 批量创建 | ✅ | ✅（循环调用） |
-| 获取 Issue iid 用于回写 | ✅ | ✅（解析 glab 输出） |
+| Create milestone | yes | no (use API) |
+| Create issue | yes | yes |
+| Link issue to milestone | yes | partial (via --milestone name; must already exist) |
+| Batch creation | yes | yes (loop calls) |
+| Get issue iid for writeback | yes | yes (parse glab output) |
 
-**结论：** 有 Milestone 创建需求时必须使用 Web API。glab 仅适合只需创建 Issue 的场景。
+**Conclusion:** Milestone creation requires the Web API. glab is only suitable for issue-only creation scenarios.

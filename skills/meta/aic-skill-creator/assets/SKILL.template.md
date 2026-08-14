@@ -1,129 +1,129 @@
 ---
-# SKILL.md 标准模板
-# 使用说明：
-#   1. 将此文件复制到 skills/<category>/<skill-name>/SKILL.md
-#   2. 目录名必须与 name 字段完全一致（小写连字符）
-#   3. 删除所有注释行（# 开头）后提交 MR
-#   4. 运行 validate.sh 和 description-score.sh 验证
+# SKILL.md Standard Template
+# Usage:
+#   1. Copy this file to skills/<category>/<skill-name>/SKILL.md
+#   2. Directory name must match the name field exactly (lowercase kebab-case)
+#   3. Remove all comment lines (starting with #) before submitting MR
+#   4. Run validate.sh and description-score.sh to verify
 #
-# 分类参考：
-#   skills/common/   → 通用 skill，与业务无关（git、docker、code-review 等）
-#   skills/domain/   → 业务域 skill（database-ops、backend-api、frontend-build 等）
+# Category reference:
+#   skills/common/   -> general skills, business-agnostic (git, docker, code-review, etc.)
+#   skills/domain/   -> business domain skills (database-ops, backend-api, frontend-build, etc.)
 
-name: <skill-name>           # 与目录名完全一致，小写连字符（kebab-case）
-version: 1.0.0               # 必填，语义化版本；修复 → patch，新增 → minor，重构 → major
+name: <skill-name>           # must match directory name exactly, lowercase kebab-case
+version: 1.0.0               # required, semantic version; fix -> patch, add -> minor, refactor -> major
 description: >
-  # 必须中英混写：中文覆盖口语触发词，英文覆盖技术术语
-  # 公式：[中文功能描述]. Use when [英文技术场景],
-  #       or when user mentions [中文口语关键词], [英文命令].
-  #       Do NOT use for [排除场景].
-  # 示例：
-  #   执行数据库迁移、优化慢查询、管理连接配置。
+  # Must be written in English: cover technical terms and natural-language keywords
+  # Formula: [English functional summary]. Use when [English technical scenario],
+  #          or when user mentions [natural-language keyword], [command].
+  #          Do NOT use for [exclusion scenario].
+  # Example:
+  #   Run database migrations, optimize slow queries, and manage connection configuration.
   #   Use when running schema migrations or tuning query performance,
-  #   or when user mentions 数据库迁移, 慢查询, 连接跑不通, or db migrate.
-  #   Do NOT use for Redis/MongoDB 或应用层 ORM 代码编写。
-  <在此填写 description>
-tags: [<tag1>, <tag2>]       # 用于 aic list 过滤，2–4 个标签
+  #   or when user mentions database migration, slow query, connection issue, or db migrate.
+  #   Do NOT use for Redis/MongoDB or application-layer ORM code.
+  <fill in description here>
+tags: [<tag1>, <tag2>]       # for aic list filtering, 2 to 4 tags
 
-# ── env-required（按需启用）──────────────────────────────
-# 如果 skill 不需要注入本地变量，删除以下所有 env 相关行
+# -- env-required (enable as needed) ----------------------
+# If the skill does not need local variable injection, remove all env-related lines below
 env-required: false
 
-# env-required: true 时取消注释并填写：
-# 变量名必须匹配 ^[A-Z][A-Z0-9_]*$，区分大小写，同一 env-vars 中不得重复
+# When env-required: true, uncomment and fill in:
+# Variable names must match ^[A-Z][A-Z0-9_]*$, case-sensitive, no duplicates within env-vars
 # env-required: true
 # env-vars:
 #   - name: DB_HOST
-#     description: 数据库主机地址（如 10.0.1.100）
+#     description: Database host address
 #     required: true
 #     target: skill
 #   - name: DB_USER
-#     description: 数据库用户名
+#     description: Database username
 #     required: true
 #     default: ""
 #     target: skill
 #   - name: DB_PASSWORD
-#     description: 数据库密码
+#     description: Database password
 #     required: true
 #     target: skill
 ---
 
-# <Skill 名称>
+# <Skill Name>
 
-<!-- 一句话说明这个 skill 的核心价值，供 aic list 详情面板展示 -->
-
----
-
-## 使用场景
-
-**适用：**
-- <场景一>
-- <场景二>
-
-**不适用：**
-- <排除场景一>（应使用 <other-skill> skill）
+<!-- One sentence describing the core value of this skill, for the aic list detail panel -->
 
 ---
 
-## 前置知识
+## When to use
 
-<!-- 列出 agent 需要了解的关键文件、配置入口或核心概念 -->
-<!-- 控制在 5–10 条，保持精简 -->
+**Use for:**
+- <scenario one>
+- <scenario two>
 
-- <关键文件或配置>：`<路径或说明>`
-- <核心概念>：<一句话解释>
+**Do NOT use for:**
+- <exclusion scenario one> (should use <other-skill> skill)
 
 ---
 
-## 工作流程
+## Prerequisites
 
-<!-- 用命令式步骤描述，每步说明输入和产出 -->
+<!-- List key files, config entry points, or core concepts the agent needs to know -->
+<!-- Keep to 5 to 10 items, stay concise -->
 
-1. **<步骤一>** — <操作说明>
+- <key file or config>: <path or description>
+- <core concept>: <one-sentence explanation>
+
+---
+
+## Workflow
+
+<!-- Describe with imperative steps, each step states input and output -->
+
+1. **<step one>** — <operation description>
    ```bash
-   <示例命令>
+   <example command>
    ```
-   产出：<产出物说明>
+   Output: <output description>
 
-2. **<步骤二>** — <操作说明>
+2. **<step two>** — <operation description>
 
-3. **<步骤三>** — <操作说明>
+3. **<step three>** — <operation description>
 
 ---
 
-## 常见边缘情况
+## Common edge cases
 
-<!-- 列出 agent 容易踩坑的地方和对应处理方式 -->
+<!-- List pitfalls and how to handle them -->
 
-| 情况 | 处理方式 |
+| Case | Handling |
 |------|----------|
-| <边缘情况一> | <处理方式> |
-| <边缘情况二> | <处理方式> |
+| <edge case one> | <handling> |
+| <edge case two> | <handling> |
 
 ---
 
-## 示例
+## Examples
 
-<!-- 具体的输入/输出示例比抽象描述更有效 -->
+<!-- Concrete input/output examples are more effective than abstract descriptions -->
 
-**输入：** <用户请求描述>
+**Input:** <user request description>
 
-**操作：**
+**Actions:**
 ```bash
-<具体命令或步骤>
+<specific commands or steps>
 ```
 
-**产出：** <预期结果>
+**Output:** <expected result>
 
 ---
 
-<!-- ── 可选区块，按需保留或删除 ───────────────────── -->
+<!-- -- Optional sections, keep or remove as needed ---------- -->
 
-## 参考文档
+## References
 
-<!-- 仅在有 references/ 目录文件时使用 -->
-<!-- 保持一层引用深度，不做嵌套引用 -->
+<!-- Use only when there are files in the references/ directory -->
+<!-- Keep reference depth to one level, no nested references -->
 
-- [<文档名>](references/<file>.md) — <一句话说明用途>
+- [<doc name>](references/<file>.md) — <one-sentence purpose>
 
-<!-- ─────────────────────────────────────────────── -->
+<!-- -------------------------------------------------------- -->

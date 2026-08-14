@@ -1,32 +1,32 @@
-# 资源配置预设表
+# Resource Config Presets
 
-## 标准预设
+## Standard Presets
 
-| 服务规模 | CPU limits | CPU requests | Memory limits | Memory requests | 适用场景 |
+| Service size | CPU limits | CPU requests | Memory limits | Memory requests | Use case |
 |----------|------------|--------------|---------------|-----------------|----------|
-| 小型 | 500m | 200m | 1Gi | 512Mi | 工具服务、低流量 API |
-| 中型 | 1000m | 600m | 3Gi | 2Gi | 常规业务服务 |
-| 大型 | 2000m | 1000m | 6Gi | 4Gi | 高并发、计算密集型服务 |
+| Small | 500m | 200m | 1Gi | 512Mi | Tool services, low-traffic APIs |
+| Medium | 1000m | 600m | 3Gi | 2Gi | Standard business services |
+| Large | 2000m | 1000m | 6Gi | 4Gi | High-concurrency, compute-intensive services |
 
-## 选择建议
+## Selection Advice
 
-**小型（500m/1Gi）：**
-- 内部工具、管理后台
-- 日均请求量 < 10万
-- 无复杂计算逻辑
+**Small (500m/1Gi):**
+- Internal tools, admin dashboards
+- Daily requests < 100k
+- No complex computation logic
 
-**中型（1000m/3Gi）：**
-- 常规业务 API 服务
-- 日均请求量 10万~100万
-- 有数据库查询、缓存操作
+**Medium (1000m/3Gi):**
+- Standard business API services
+- Daily requests 100k to 1M
+- Has database queries, cache operations
 
-**大型（2000m/6Gi）：**
-- 核心业务服务、网关
-- 日均请求量 > 100万
-- 有大量并发、数据处理
+**Large (2000m/6Gi):**
+- Core business services, gateways
+- Daily requests > 1M
+- Has heavy concurrency, data processing
 
-## requests vs limits 说明
+## requests vs limits Explanation
 
-- `requests`：K8s 调度时保证分配的资源，影响 Pod 调度到哪个节点
-- `limits`：容器可使用的资源上限，超出 CPU limits 会被限速，超出 Memory limits 会被 OOM Kill
-- 建议 requests 为 limits 的 40%~60%，避免资源浪费同时保留弹性空间
+- `requests`: resources guaranteed at scheduling time; affects which node the Pod is scheduled to
+- `limits`: resource cap for the container; exceeding CPU limits causes throttling, exceeding Memory limits causes OOM Kill
+- Recommend requests at 40% to 60% of limits to avoid waste while preserving elasticity

@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
-# validate.sh — 校验 SKILL.md 结构合规
-# 用法：scripts/validate.sh <path/to/SKILL.md>
-# 退出码：0 = 全部通过，1 = 有错误
+# validate.sh — validate SKILL.md structural compliance
+# Usage: scripts/validate.sh <path/to/SKILL.md>
+# Exit code: 0 = all checks passed, 1 = errors found
 
 set -euo pipefail
 
 TARGET="${1:-}"
 if [[ -z "$TARGET" ]]; then
-  echo "用法：$0 <path/to/SKILL.md>" >&2
+  echo "Usage: $0 <path/to/SKILL.md>" >&2
   exit 1
 fi
 
 if [[ ! -f "$TARGET" ]]; then
-  echo "错误：文件不存在：$TARGET" >&2
+  echo "Error: file not found: $TARGET" >&2
   exit 1
 fi
 
@@ -29,69 +29,69 @@ echo ""
 echo "aic validate — $(realpath "$TARGET")"
 echo "────────────────────────────────────────────────────────"
 
-# ── 1. frontmatter 存在性检查 ──────────────────────────────
+# ── 1. frontmatter existence check ───────────────────────
 echo ""
-echo "[1] Frontmatter 结构"
+echo "[1] Frontmatter structure"
 
-# 检查是否以 --- 开头
+# Check that the file starts with ---
 if ! head -1 "$TARGET" | grep -q "^---"; then
-  fail "SKILL.md 必须以 YAML frontmatter 开头（第一行为 ---）"
+  fail "SKILL.md must begin with YAML frontmatter (first line is ---)"
 else
-  pass "frontmatter 开头存在"
+  pass "frontmatter opening present"
 fi
 
-# 提取 frontmatter 内容（两个 --- 之间）
+# Extract frontmatter content (between the two --- lines)
 FRONTMATTER="$(awk '/^---/{if(++c==2)exit} c==1{print}' "$TARGET")"
 
-# ── 2. 必填字段检查 ────────────────────────────────────────
+# ── 2. required fields check ─────────────────────────────
 echo ""
-echo "[2] 必填字段"
+echo "[2] Required fields"
 
 # name
 if ! echo "$FRONTMATTER" | grep -q "^name:"; then
-  fail "缺少必填字段：name"
+  fail "Missing required field: name"
 else
   FM_NAME="$(echo "$FRONTMATTER" | grep "^name:" | head -1 | sed 's/name:[[:space:]]*//')"
   pass "name: $FM_NAME"
 
-  # name 与目录名一致性检查
+  # name vs directory name consistency check
   if [[ "$FM_NAME" != "$SKILL_DIR_NAME" ]]; then
-    fail "name 字段（${FM_NAME}）与目录名（${SKILL_DIR_NAME}）不一致，必须完全匹配"
+    fail "name field (${FM_NAME}) does not match directory name (${SKILL_DIR_NAME}); must match exactly"
   else
-    pass "name 与目录名一致"
+    pass "name matches directory name"
   fi
 fi
 
 # version
 if ! echo "$FRONTMATTER" | grep -q "^version:"; then
-  fail "缺少必填字段：version（aic 强制要求语义化版本）"
+  fail "Missing required field: version (aic enforces semantic versioning)"
 else
   FM_VER="$(echo "$FRONTMATTER" | grep "^version:" | head -1 | sed 's/version:[[:space:]]*//')"
-  # 简单校验 semver 格式 MAJOR.MINOR.PATCH
+  # Simple semver format check MAJOR.MINOR.PATCH
   if echo "$FM_VER" | grep -qE "^[0-9]+\.[0-9]+\.[0-9]+$"; then
-    pass "version: ${FM_VER}（格式正确）"
+    pass "version: ${FM_VER} (valid format)"
   else
-    fail "version 格式不合法（期望 MAJOR.MINOR.PATCH，实际：${FM_VER}）"
+    fail "Invalid version format (expected MAJOR.MINOR.PATCH, got: ${FM_VER})"
   fi
 fi
 
 # description
 if ! echo "$FRONTMATTER" | grep -q "^description:"; then
-  fail "缺少必填字段：description"
+  fail "Missing required field: description"
 else
-  pass "description 字段存在"
+  pass "description field present"
 fi
 
 # tags
 if ! echo "$FRONTMATTER" | grep -q "^tags:"; then
-  warn "建议添加 tags 字段，方便 aic list 过滤"
+  warn "Consider adding a tags field for easier filtering in aic list"
 else
-  pass "tags 字段存在"
+  pass "tags field present"
 fi
 
-# ── 3. env-required 检查 ──────────────────────────────────
+# ── 3. env-required check ────────────────────────────────
 echo ""
-echo "[3] env-required 规范"
+echo "[3] env-required rules"
 
 ENV_REQUIRED="$(echo "$FRONTMATTER" | grep "^env-required:" | head -1 | sed 's/env-required:[[:space:]]*//')"
 ENV_VAR_NAMES="$(echo "$FRONTMATTER" | sed -n 's/^[[:space:]]*-[[:space:]]*name:[[:space:]]*//p')"
@@ -99,101 +99,101 @@ ENV_VAR_NAMES="$(echo "$FRONTMATTER" | sed -n 's/^[[:space:]]*-[[:space:]]*name:
 if [[ -n "$ENV_VAR_NAMES" ]]; then
   while IFS= read -r var_name; do
     if echo "$var_name" | grep -qE '^[A-Z][A-Z0-9_]*$'; then
-      pass "变量名 $var_name 符合 ^[A-Z][A-Z0-9_]*$"
+      pass "Variable name $var_name matches ^[A-Z][A-Z0-9_]*$"
     else
-      fail "变量名 $var_name 不合法；必须匹配 ^[A-Z][A-Z0-9_]*$"
+      fail "Variable name $var_name is invalid; must match ^[A-Z][A-Z0-9_]*$"
     fi
   done <<< "$ENV_VAR_NAMES"
 
   DUPLICATE_ENV_VARS="$(echo "$ENV_VAR_NAMES" | sort | uniq -d)"
   if [[ -n "$DUPLICATE_ENV_VARS" ]]; then
-    fail "env-vars 中存在重复变量名：$(echo "$DUPLICATE_ENV_VARS" | tr '\n' ' ')"
+    fail "Duplicate variable names in env-vars: $(echo "$DUPLICATE_ENV_VARS" | tr '\n' ' ')"
   else
-    pass "env-vars 中无重复变量名"
+    pass "No duplicate variable names in env-vars"
   fi
 fi
 
 if [[ "$ENV_REQUIRED" == "true" ]]; then
   pass "env-required: true"
 
-  # 必须有 env-vars
+  # env-vars must be present
   if ! echo "$FRONTMATTER" | grep -q "^env-vars:"; then
-    fail "env-required: true 时必须声明 env-vars 列表"
+    fail "When env-required: true, an env-vars list must be declared"
   else
-    pass "env-vars 字段存在"
+    pass "env-vars field present"
   fi
 
-  # 正文中的占位符必须在 env-vars 中声明
+  # Placeholders used in the body must be declared in env-vars
   BODY="$(awk 'BEGIN{found=0} /^---/{found++; next} found>=2{print}' "$TARGET")"
   PLACEHOLDERS="$(echo "$BODY" | grep -oE '\{\{[A-Z][A-Z0-9_]*\}\}' | sort -u || true)"
   if [[ -n "$PLACEHOLDERS" ]]; then
     while IFS= read -r ph; do
       VAR_NAME="${ph//[\{\}]/}"
       if echo "$ENV_VAR_NAMES" | grep -qx "$VAR_NAME"; then
-        pass "占位符 $ph 已在 env-vars 中声明"
+        pass "Placeholder $ph is declared in env-vars"
       else
-        fail "占位符 $ph 在正文中使用但未在 env-vars 中声明"
+        fail "Placeholder $ph is used in the body but not declared in env-vars"
       fi
     done <<< "$PLACEHOLDERS"
   fi
 
-  # 检测疑似硬编码的 IP 或密码
+  # Detect suspected hardcoded IPs or passwords
   BODY="$(awk 'BEGIN{found=0} /^---/{found++; next} found>=2{print}' "$TARGET")"
   if echo "$BODY" | grep -qE "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}"; then
-    warn "正文中疑似存在硬编码 IP 地址，env-required skill 应使用 {{VAR_NAME}} 占位符"
+    warn "Body appears to contain a hardcoded IP address; env-required skills should use {{VAR_NAME}} placeholders"
   fi
   if echo "$BODY" | grep -qiE "(password|passwd|secret|token)[[:space:]]*[:=][[:space:]]*[^{]"; then
-    warn "正文中疑似存在硬编码敏感值，请改用 {{VAR_NAME}} 占位符"
+    warn "Body appears to contain a hardcoded sensitive value; use {{VAR_NAME}} placeholders instead"
   fi
 
 elif [[ "$ENV_REQUIRED" == "false" ]] || [[ -z "$ENV_REQUIRED" ]]; then
-  pass "env-required: false（标准 skill，无需环境变量）"
+  pass "env-required: false (standard skill, no environment variables needed)"
 else
-  fail "env-required 字段值不合法（期望 true 或 false，实际：${ENV_REQUIRED}）"
+  fail "Invalid env-required value (expected true or false, got: ${ENV_REQUIRED})"
 fi
 
-# ── 4. 正文长度检查 ───────────────────────────────────────
+# ── 4. body length check ─────────────────────────────────
 echo ""
-echo "[4] 正文长度"
+echo "[4] Body length"
 
 BODY_LINES="$(awk 'BEGIN{found=0} /^---/{found++; next} found>=2{print}' "$TARGET" | wc -l | tr -d ' ')"
 if [[ "$BODY_LINES" -gt 500 ]]; then
-  warn "正文长度 ${BODY_LINES} 行，超过建议上限 500 行。考虑将详细内容移到 references/"
+  warn "Body is ${BODY_LINES} lines, exceeding the recommended 500-line limit. Consider moving detail into references/"
 elif [[ "$BODY_LINES" -lt 10 ]]; then
-  warn "正文过短（${BODY_LINES} 行），skill 指令可能不够充分"
+  warn "Body is too short (${BODY_LINES} lines); skill instructions may be insufficient"
 else
-  pass "正文长度 ${BODY_LINES} 行（合理范围内）"
+  pass "Body length ${BODY_LINES} lines (within reasonable range)"
 fi
 
-# ── 5. 适配层检查（informational）────────────────────────
+# ── 5. adapter layer check (informational) ───────────────
 echo ""
-echo "[5] 适配层（可选）"
+echo "[5] Adapter layer (optional)"
 
 for TOOL in claude codex gemini; do
   ADAPTER_PATH="$SKILL_DIR/adapters/$TOOL/SKILL.md"
   if [[ -f "$ADAPTER_PATH" ]]; then
-    # 适配层也需要完整的 frontmatter
+    # Adapter layers also require complete frontmatter
     if ! head -1 "$ADAPTER_PATH" | grep -q "^---"; then
-      fail "适配层 adapters/$TOOL/SKILL.md 缺少 frontmatter"
+      fail "Adapter adapters/$TOOL/SKILL.md is missing frontmatter"
     else
-      pass "adapters/$TOOL/SKILL.md 存在且有 frontmatter"
+      pass "adapters/$TOOL/SKILL.md exists and has frontmatter"
     fi
   fi
 done
 
 if [[ ! -d "$SKILL_DIR/adapters" ]]; then
-  pass "无适配层（大多数 skill 无需适配层）"
+  pass "No adapter layer (most skills do not need one)"
 fi
 
-# ── 结果汇总 ──────────────────────────────────────────────
+# ── result summary ───────────────────────────────────────
 echo ""
 echo "────────────────────────────────────────────────────────"
 if [[ $ERRORS -eq 0 && $WARNINGS -eq 0 ]]; then
-  echo "✓  校验通过，无错误，无警告"
+  echo "✓  Validation passed, no errors, no warnings"
 elif [[ $ERRORS -eq 0 ]]; then
-  echo "⚠  校验通过，${WARNINGS} 个警告"
+  echo "⚠  Validation passed with ${WARNINGS} warning(s)"
 else
-  echo "✗  校验失败：${ERRORS} 个错误，${WARNINGS} 个警告"
+  echo "✗  Validation failed: ${ERRORS} error(s), ${WARNINGS} warning(s)"
 fi
 echo ""
 

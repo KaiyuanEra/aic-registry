@@ -109,7 +109,7 @@ if [[ -f "$content" ]]; then
     pass "content line count is $line_count"
   fi
 
-  if [[ "$allow_todo" != "--allow-todo" ]] && rg -q '\[TODO|\[待确认|待用户确认[：:]' "$content"; then
+  if [[ "$allow_todo" != "--allow-todo" ]] && rg -q '\[TODO|\[Pending user confirmation[：:]' "$content"; then
     fail "content contains TODO placeholders; only explicit scaffold output may use --allow-todo"
   fi
 

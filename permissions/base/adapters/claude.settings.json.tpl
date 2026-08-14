@@ -1,10 +1,10 @@
 {
   "_aic_managed": true,
   "_aic_version": "1.0.0",
-  "_aic_note": "由 aic 管理；请使用 aic permission 命令修改",
-  "_aic_permissions_note": "permissions.allow/ask/deny 会跨作用域合并；deny 优先于 ask，ask 优先于 allow",
-  "_aic_permissions_rule_syntax": "ToolName 或 ToolName(specifier)，例如 Bash(git *) 或 Read(./.env)",
-  "_aic_default_mode_values": "defaultMode 可选值包括 default、acceptEdits、plan、bypassPermissions、auto；此处省略以保留 Claude 默认值",
+  "_aic_note": "Managed by aic; use aic permission command to modify",
+  "_aic_permissions_note": "permissions.allow/ask/deny merge across scopes; deny takes precedence over ask, ask over allow",
+  "_aic_permissions_rule_syntax": "ToolName or ToolName(specifier), e.g. Bash(git *) or Read(./.env)",
+  "_aic_default_mode_values": "defaultMode accepts: default, acceptEdits, plan, bypassPermissions, auto; omitted here to keep Claude defaults",
   "permissions": {
     "allow": [
       "Bash(git *)",

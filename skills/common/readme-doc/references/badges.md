@@ -1,10 +1,10 @@
-# 徽章参考库
+# Badge Reference
 
-shields.io 徽章格式：`https://img.shields.io/badge/<label>-<message>-<color>?style=flat&logo=<logo-slug>`
+> All badges use shields.io. When a technology is not listed below, construct a custom badge using the formula at the bottom.
 
-logo slug 来自 [Simple Icons](https://simpleicons.org/)，搜索技术名即可获取准确 slug。
+---
 
-## 语言 / 运行时
+## Language / Runtime
 
 ```markdown
 [![Go](https://img.shields.io/badge/Go-1.24+-00ADD8?style=flat&logo=go)](https://go.dev/)
@@ -19,7 +19,7 @@ logo slug 来自 [Simple Icons](https://simpleicons.org/)，搜索技术名即�
 [![Swift](https://img.shields.io/badge/Swift-5.9+-F05138?style=flat&logo=swift)](https://swift.org/)
 ```
 
-## 数据库
+## Database
 
 ```markdown
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-4169E1?style=flat&logo=postgresql)](https://postgresql.org/)
@@ -32,7 +32,7 @@ logo slug 来自 [Simple Icons](https://simpleicons.org/)，搜索技术名即�
 [![Cassandra](https://img.shields.io/badge/Cassandra-4.x-1287B1?style=flat&logo=apachecassandra)](https://cassandra.apache.org/)
 ```
 
-## Web 框架
+## Web Framework
 
 ```markdown
 [![Gin](https://img.shields.io/badge/Gin-1.x-00ADD8?style=flat&logo=go)](https://gin-gonic.com/)
@@ -48,7 +48,7 @@ logo slug 来自 [Simple Icons](https://simpleicons.org/)，搜索技术名即�
 [![Laravel](https://img.shields.io/badge/Laravel-10.x-FF2D20?style=flat&logo=laravel)](https://laravel.com/)
 ```
 
-## 消息队列 / 流处理
+## Message Queue / Stream Processing
 
 ```markdown
 [![Kafka](https://img.shields.io/badge/Kafka-3.x-231F20?style=flat&logo=apachekafka)](https://kafka.apache.org/)
@@ -56,7 +56,7 @@ logo slug 来自 [Simple Icons](https://simpleicons.org/)，搜索技术名即�
 [![NATS](https://img.shields.io/badge/NATS-2.x-27AAE1?style=flat&logo=natsdotio)](https://nats.io/)
 ```
 
-## 基础设施 / DevOps
+## Infrastructure / DevOps
 
 ```markdown
 [![Docker](https://img.shields.io/badge/Docker-ready-2496ED?style=flat&logo=docker)](https://docker.com/)
@@ -67,7 +67,7 @@ logo slug 来自 [Simple Icons](https://simpleicons.org/)，搜索技术名即�
 [![Helm](https://img.shields.io/badge/Helm-3.x-0F1689?style=flat&logo=helm)](https://helm.sh/)
 ```
 
-## 许可证
+## License
 
 ```markdown
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -76,14 +76,14 @@ logo slug 来自 [Simple Icons](https://simpleicons.org/)，搜索技术名即�
 [![License: Private](https://img.shields.io/badge/License-Private-red.svg)](LICENSE)
 ```
 
-## 自定义徽章
+## Custom Badges
 
-当项目使用的技术在上方找不到时，用以下公式构造：
+When a project uses a technology not listed above, construct a badge using this formula:
 
 ```
-https://img.shields.io/badge/<显示文字>-<版本>-<品牌色>?style=flat&logo=<simpleicons-slug>
+https://img.shields.io/badge/<display-text>-<version>-<brand-color>?style=flat&logo=<simpleicons-slug>
 ```
 
-1. 在 https://simpleicons.org/ 搜索技术名，获取 slug 和品牌色（hex）
-2. 将 hex 颜色去掉 `#` 填入 `<color>` 位置
-3. logo slug 中空格用连字符替代（如 `Apache Kafka` → `apachekafka`）
+1. Search the technology name at https://simpleicons.org/ to get the slug and brand color (hex)
+2. Remove the `#` from the hex color and fill in `<color>`
+3. Replace spaces in the logo slug with hyphens (e.g. `Apache Kafka` -> `apachekafka`)

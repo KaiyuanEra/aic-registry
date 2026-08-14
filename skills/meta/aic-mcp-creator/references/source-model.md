@@ -1,52 +1,52 @@
-# MCP 源模型契约
+# MCP Source Model Contract
 
-## 目录结构
+## Directory Structure
 
-每个 MCP server 是一个独立的 registry 包：
+Each MCP server is an independent registry package:
 
 ```text
 mcp-servers/<name>/
-└── MCP-SERVER.md
++-- MCP-SERVER.md
 ```
 
-`MCP-SERVER.md` 第一行必须是 `---`，并以另一个独占一行的 `---` 结束 frontmatter。正文只用于详细说明，不参与配置生成。
+The first line of MCP-SERVER.md must be ---, and the frontmatter ends with another --- on its own line. The body is for detailed documentation only and does not participate in configuration generation.
 
-## 公共字段
+## Common Fields
 
-| 字段 | 必填 | 规则 |
+| Field | Required | Rules |
 |---|---|---|
-| `name` | 是 | 匹配 `^[a-z0-9]+(-[a-z0-9]+)*$`，与目录名一致 |
-| `version` | 是 | `MAJOR.MINOR.PATCH`，不带 `v` |
-| `description` | 是 | 非空的单行或折叠字符串 |
-| `transport` | 是 | `stdio`、`sse`、`streamable-http` 三选一 |
-| `targets` | 是 | 非空、无重复，只允许 `claude/codex/gemini/opencode` |
-| `env-required` | 是 | YAML 布尔值；使用变量时为 `true` |
-| `env-vars` | 条件必填 | 变量声明列表，`target` 固定为 `mcp` |
-| `tags` | 否 | 用于 registry 检索的字符串列表 |
-| `timeout` | 否 | 正数 Go duration，例如 `5s`、`30s`、`2m` |
-| `platforms` | 否 | 仅 `stdio` 可用，按 GOOS 覆盖当前平台的 `command` / `args` |
+| name | yes | matches ^[a-z0-9]+(-[a-z0-9]+)*$, consistent with directory name |
+| version | yes | MAJOR.MINOR.PATCH, no v prefix |
+| description | yes | non-empty single-line or folded string |
+| transport | yes | one of stdio, sse, streamable-http |
+| targets | yes | non-empty, no duplicates, only claude/codex/gemini/opencode allowed |
+| env-required | yes | YAML boolean; true when variables are used |
+| env-vars | conditionally required | variable declaration list, target fixed to mcp |
+| tags | no | string list for registry search |
+| timeout | no | positive Go duration, e.g. 5s, 30s, 2m |
+| platforms | no | stdio only, overrides command / args per GOOS |
 
-未知字段必须报错，避免拼写错误被静默忽略。
+Unknown fields must cause an error, preventing typos from being silently ignored.
 
-## Transport 字段
+## Transport Fields
 
-| transport | 必填 | 可选 | 禁止 |
+| transport | required | optional | forbidden |
 |---|---|---|---|
-| `stdio` | `command` | `args`、`cwd`、`env`、`timeout`、`platforms` | `url`、`headers` |
-| `sse` | `url` | `headers`、`timeout` | `command`、`args`、`cwd`、`env` |
-| `streamable-http` | `url` | `headers`、`timeout` | `command`、`args`、`cwd`、`env` |
+| stdio | command | args, cwd, env, timeout, platforms | url, headers |
+| sse | url | headers, timeout | command, args, cwd, env |
+| streamable-http | url | headers, timeout | command, args, cwd, env |
 
-字段类型：
+Field types:
 
-- `command`、`cwd`、`url`、`timeout` 是非空字符串。
-- `args` 是字符串列表，保持顺序。
-- `env` 和 `headers` 是字符串到字符串的映射。
-- `url` 必须使用 `http` 或 `https` scheme。
-- `timeout` 表达源模型中的超时，由 adapter 转换为目标客户端使用的单位；不要在源文件中预先写成秒数或毫秒数。
+- command, cwd, url, timeout are non-empty strings.
+- args is a string list, preserving order.
+- env and headers are string-to-string maps.
+- url must use the http or https scheme.
+- timeout expresses the timeout in the source model; the adapter converts it to the unit used by the target client. Do not pre-write it as seconds or milliseconds in the source file.
 
-## STDIO 平台覆盖
+## STDIO Platform Override
 
-`stdio` MCP 可以声明平台差异：
+A stdio MCP can declare platform differences:
 
 ```yaml
 command: codegraph
@@ -61,47 +61,46 @@ platforms:
       - --mcp
 ```
 
-语义：
+Semantics:
 
-- 顶层 `command` / `args` 是默认配置，适用于 Linux/macOS，也作为 fallback。
-- `platforms.<GOOS>.command` / `args` 只覆盖当前平台；未命中时使用顶层配置。
-- 初期允许 `windows`、`linux`、`darwin`，registry 不要求每个平台都声明。
-- 只支持 `command` 和 `args`，不得在 `platforms` 下声明 `shell`、`shell_args`、`cwd`、`env` 或客户端专属字段。
-- `args` 是整体替换；`args: []` 表示当前平台无参数，未写 `args` 才 fallback 顶层。
-- 不自动补 `.exe` / `.cmd`，不自动 shell wrap，不做路径转换。Windows 启动语义必须来自 MCP server 分发者或用户明确提供。
+- The top-level command / args is the default, applying to Linux/macOS and also serving as fallback.
+- platforms.<GOOS>.command / args overrides only the current platform; when not matched, the top-level config is used.
+- Initially windows, linux, darwin are allowed; the registry does not require every platform to be declared.
+- Only command and args are supported; do not declare shell, shell_args, cwd, env, or client-specific fields under platforms.
+- args is replaced wholesale; args: [] means the current platform has no arguments, while omitting args falls back to the top-level.
+- Do not auto-append .exe / .cmd, do not auto shell-wrap, do not do path conversion. Windows launch semantics must come from the MCP server distributor or be explicitly provided by the user.
 
-## 解析和渲染边界
+## Parsing and Rendering Boundary
 
-正确顺序是：
+The correct order is:
 
 ```text
-解析 YAML frontmatter
-  -> 构造 transport 判别联合类型
-  -> 校验 transport 专属字段
-  -> 对 stdio 选择当前平台 command/args 覆盖
-  -> 解析并校验变量
-  -> 校验 targets 能力
-  -> 所有 adapter 生成成功
-  -> 原子增量写入所有目标配置
+Parse YAML frontmatter
+  -> construct transport discriminated union
+  -> validate transport-specific fields
+  -> select current platform command/args override for stdio
+  -> parse and validate variables
+  -> validate target capabilities
+  -> generate adapter configs
 ```
 
-变量只能在 YAML 成功解析后，对允许字段的字符串值逐项替换。不要对原始 YAML 文本替换变量；变量值中的引号、换行或特殊字符可能破坏 YAML 结构。
+Variables can only be substituted into allowed field string values after YAML is successfully parsed. Do not replace variables in raw YAML text; quotes, newlines, or special characters in variable values could break YAML structure.
 
-一次安装涉及多个客户端时，必须先完成所有 adapter 的生成与校验，再统一提交写入，避免部分客户端成功、部分客户端失败。
+When a single installation involves multiple clients, all adapter generation and validation must complete before committing writes atomically, to avoid partial success on some clients and failure on others.
 
-## 正文
+## Body
 
-正文至少包含一个标题和用途说明，可以记录安装前提、认证来源、安全注意事项和服务端文档入口。正文：
+The body must contain at least one heading and a purpose description, and may record installation prerequisites, auth sources, security notes, and server documentation entry points. The body:
 
-- 不参与 MCP 配置生成。
-- 不作为 frontmatter 缺失字段的补充来源。
-- 不保存 token、密码或其他真实敏感值。
-- 默认不包含 TODO、空白模板或待确认项。
+- Does not participate in MCP configuration generation.
+- Is not a supplementary source for missing frontmatter fields.
+- Does not store tokens, passwords, or other real sensitive values.
+- By default contains no TODOs, blank templates, or pending items.
 
-## 版本和索引
+## Version and Index
 
-- 新建包从 `1.0.0` 开始。
-- 正文、targets、transport 配置、变量声明或其他生效元数据发生变化时必须递增版本。
-- 小修升 PATCH；向后兼容的能力扩展升 MINOR；不兼容契约变化升 MAJOR。
-- 修改后运行 `make index`，不要手工编辑 `mcp-servers/index.yaml`。
-- 索引根键为 `mcp_servers`，条目包含 `name`、`version`、`description`、可选 `tags` 和 `path`。
+- New packages start at 1.0.0.
+- Version must be bumped when the body, targets, transport config, variable declarations, or other effective metadata change.
+- PATCH for minor fixes; MINOR for backward-compatible capability extensions; MAJOR for incompatible contract changes.
+- After modification, run make index; do not manually edit mcp-servers/index.yaml.
+- The index root key is mcp_servers; entries include name, version, description, optional tags, and path.

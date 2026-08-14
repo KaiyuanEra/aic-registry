@@ -1,48 +1,48 @@
-# 项目上下文：孵化与原型期
+# Project Context: Incubation and Prototype
 
-## 1. 项目定位
+## 1. Project Positioning
 
-- 当前目标是用最短路径验证核心假设，而不是建设完整的生产系统。
-- 开始任务前先明确要验证的问题、最小成功标准和不在本次范围内的事项。
-- 优先交付可运行、可观察结果的最小实现；不为假设中的未来需求增加复杂度。
-- 可以使用探索性代码和临时实现，但不得降低密钥、真实数据和生产环境的安全边界。
+- The current goal is to validate the core hypothesis in the shortest path, not to build a complete production system.
+- Before starting a task, clarify the problem to validate, the minimum success criteria, and what is out of scope.
+- Prioritize delivering a runnable, observable minimal implementation; do not add complexity for hypothetical future needs.
+- Exploratory code and temporary implementations are acceptable, but do not lower the security boundaries for keys, real data, and production environments.
 
-## 2. 技术栈与架构
+## 2. Tech Stack and Architecture
 
-- 从目标项目已有的记忆文件、README、依赖清单和构建配置核验当前技术栈，不猜测版本或模块。
-- 保持现有目录和调用关系；除非验证目标确实需要，不新增架构层、通用框架或扩展点。
-- 技术选型尚未稳定时，避免不可逆的数据格式、公共接口和基础设施绑定。
-- 新增依赖前说明它直接解决的问题；标准库或现有依赖足够时不引入新依赖。
+- Verify the current tech stack from the target project existing memory files, README, dependency manifests, and build config; do not guess versions or modules.
+- Preserve existing directory and call relationships; do not add architecture layers, generic frameworks, or extension points unless the validation goal clearly requires it.
+- When technology selection is not yet stable, avoid irreversible data formats, public interfaces, and infrastructure bindings.
+- Before adding a dependency, explain the problem it directly solves; do not introduce new dependencies when the standard library or existing dependencies suffice.
 
-## 3. 常用命令
+## 3. Common Commands
 
-- 只运行目标项目已声明的安装、启动、构建、测试和 lint 命令。
-- 优先从项目记忆文件、README、Makefile、任务脚本和包管理配置查找真实命令。
-- 未找到可靠命令时明确说明缺口，不根据技术栈猜测命令。
-- 验证时先运行覆盖核心流程的最小命令集，避免与当前假设无关的耗时工作。
+- Only run install, start, build, test, and lint commands already declared in the target project.
+- Prioritize finding real commands from project memory files, README, Makefile, task scripts, and package manager config.
+- When no reliable command is found, clearly state the gap; do not guess commands based on tech stack.
+- For validation, first run the minimal command set covering core flows; avoid time-consuming work unrelated to the current hypothesis.
 
-## 4. 代码规范
+## 4. Code Conventions
 
-- 使用最简单、最直接的实现，避免提前抽象、过度配置和一次性接口。
-- 遵循目标项目已有风格，不借原型任务统一格式或重构无关代码。
-- 临时实现必须边界清晰，不伪装成稳定能力，也不扩散到核心流程之外。
-- 对核心验证路径保留必要错误处理，使失败原因可以观察和复现。
+- Use the simplest, most direct implementation; avoid premature abstraction, over-configuration, and one-off interfaces.
+- Follow the target project existing style; do not use prototype tasks as an excuse to unify formatting or refactor unrelated code.
+- Temporary implementations must have clear boundaries; do not disguise them as stable capabilities or spread them beyond core flows.
+- Preserve necessary error handling for core validation paths so failure causes are observable and reproducible.
 
-## 5. 禁止事项与高危操作
+## 5. Prohibitions and High-Risk Operations
 
-- 不连接生产数据库，不调用会产生真实副作用的生产服务。
-- 不提交 `.env`、密钥、访问令牌、密码或真实用户数据。
-- 不执行发布、数据清理、不可逆迁移或其他超出原型验证范围的操作。
-- 不以“只是原型”为理由绕过仓库现有的安全限制和明确禁止事项。
+- Do not connect to production databases or call production services that produce real side effects.
+- Do not commit .env files, keys, access tokens, passwords, or real user data.
+- Do not execute releases, data cleanup, irreversible migrations, or other operations beyond the prototype validation scope.
+- Do not bypass existing repository security restrictions and explicit prohibitions under the guise of "just a prototype."
 
-## 6. 测试与验证流程
+## 6. Testing and Validation Flow
 
-- 以核心假设是否被可重复验证作为完成标准，不以代码量或文件数量衡量完成度。
-- 目标项目已有测试时，运行与改动直接相关的测试；没有测试时，执行并记录可重复的手动验证步骤。
-- 至少覆盖核心成功路径和一个最可能阻断验证的失败路径。
-- 交付时报告验证结果、已知限制和未执行的检查，不把未知结果描述为成功。
+- Use whether the core hypothesis is verifiable and reproducible as the completion criterion; do not measure completion by code volume or file count.
+- When the target project has tests, run tests directly related to the change; when there are no tests, execute and record reproducible manual validation steps.
+- Cover at least the core success path and one failure path most likely to block validation.
+- Report validation results, known limitations, and unexecuted checks on delivery; do not describe unknown results as success.
 
-## 7. 外部文档引用
+## 7. External Documentation References
 
-- 优先读取目标项目中已存在的产品需求、设计稿和技术说明，只提取与当前验证目标有关的内容。
-- 引用文档时使用已确认存在的真实路径或链接，不复制长篇内容，不创建虚构引用。
+- Prioritize reading product requirements, design drafts, and technical specs that already exist in the target project; extract only content relevant to the current validation goal.
+- When referencing documents, use confirmed real paths or links; do not copy long content and do not create fabricated references.

@@ -1,42 +1,43 @@
-# Secret 创建和管理指南
 
-## 为什么不把密码写进 k8s.yaml
+# Secret Creation and Management Guide
 
-Secret 的 `data` 字段值是 base64 编码，**不是加密**。任何人拿到 YAML 文件都能解码出明文。因此：
-- 生成的 k8s.yaml 中 Secret 值只填占位符 `{base64-value}`
-- 实际值通过 `kubectl create secret` 命令手动创建，或通过外部密钥管理系统注入
+## Why Not Put Passwords in k8s.yaml
 
-## 手动创建 Secret
+Secret `data` field values are base64 encoded, **not encrypted**. Anyone with the YAML file can decode the plaintext. Therefore:
+- Secret values in generated k8s.yaml are filled with placeholders `{base64-value}` only
+- Actual values are created manually via `kubectl create secret` or injected via an external secret management system
+
+## Manual Secret Creation
 
 ```bash
-# 方式一：从字面量创建
+# Method 1: create from literals
 kubectl create secret generic {secret-name} \
   --namespace={namespace} \
   --from-literal=db-password=your-actual-password \
   --from-literal=api-key=your-actual-key
 
-# 方式二：从文件创建
+# Method 2: create from file
 kubectl create secret generic {secret-name} \
   --namespace={namespace} \
   --from-file=config.yaml=./local-config.yaml
 
-# 查看 Secret（值会被 base64 编码显示）
+# View Secret (values are base64 encoded)
 kubectl get secret {secret-name} -n {namespace} -o yaml
 ```
 
-## 生成 base64 编码
+## Generating base64 Encoding
 
 ```bash
 # macOS / Linux
 echo -n "your-value" | base64
 
-# 解码验证
+# Decode to verify
 echo "eW91ci12YWx1ZQ==" | base64 -d
 ```
 
-注意：`echo -n` 的 `-n` 参数很重要，避免末尾换行符被编码进去。
+Note: the `-n` flag in `echo -n` is important; it prevents the trailing newline from being encoded.
 
-## 在 Deployment 中引用 Secret
+## Referencing Secrets in Deployment
 
 ```yaml
 env:
@@ -47,9 +48,9 @@ env:
         key: db-password
 ```
 
-## 推荐：使用外部密钥管理
+## Recommended: External Secret Management
 
-生产环境建议使用：
-- **Vault**：HashiCorp Vault + K8s Auth Method
-- **K8s External Secrets Operator**：从云厂商 KMS 同步
-- **Sealed Secrets**：加密后可安全提交到 Git
+For production, recommend:
+- **Vault**: HashiCorp Vault + K8s Auth Method
+- **K8s External Secrets Operator**: sync from cloud provider KMS
+- **Sealed Secrets**: encrypt then safely commit to Git

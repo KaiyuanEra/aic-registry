@@ -1,118 +1,118 @@
-# 安全审查专项
+# Security Review
 
-覆盖 OWASP Top 10 中与代码审查直接相关的类别。
+Covers OWASP Top 10 categories directly relevant to code review.
 
 ---
 
-## SQL 注入
+## SQL Injection
 
 ```go
-// ❌ 危险：字符串拼接构造 SQL
-query := "SELECT * FROM users WHERE name = '" + name + "'"
+// DANGEROUS: SQL constructed via string concatenation
+query := "SELECT * FROM users WHERE name =  + name + "
 db.Query(query)
 
-// ✅ 安全：参数化查询
+// SAFE: parameterized query
 db.Query("SELECT * FROM users WHERE name = ?", name)
 ```
 
-**触发条件：** name 来自用户输入，传入 `' OR '1'='1` 可绕过认证  
-**检查点：** 所有 SQL 构造处，特别是 `fmt.Sprintf` + SQL 关键字组合
+**Trigger condition:** name comes from user input; passing `OR\1'='1` can bypass auth
+**Check point:** all SQL construction; especially `fmt.Sprintf` + SQL keyword combinations
 
 ---
 
-## 命令注入
+## Command Injection
 
 ```go
-// ❌ 危险：用户输入传入 exec
+// DANGEROUS: user input passed to exec
 cmd := exec.Command("sh", "-c", "ls " + userInput)
 
-// ✅ 安全：参数分离，不经过 shell 解析
+// SAFE: separate arguments; do not go through shell parsing
 cmd := exec.Command("ls", userInput)
 ```
 
-**触发条件：** userInput 包含 `; rm -rf /` 等 shell 元字符  
-**检查点：** `exec.Command`、`os/exec`、`syscall.Exec` 调用处
+**Trigger condition:** userInput contains `; rm -rf /` or other shell metacharacters
+**Check point:** `exec.Command`, `os/exec`, `syscall.Exec` call sites
 
 ---
 
-## 路径穿越
+## Path Traversal
 
 ```go
-// ❌ 危险：路径拼接前未清理
+// DANGEROUS: path not sanitized before joining
 filePath := filepath.Join(baseDir, userInput)
-// userInput = "../../etc/passwd" 可读取任意文件
+// userInput = "../../etc/passwd" can read arbitrary files
 
-// ✅ 安全：清理后验证前缀
+// SAFE: clean then verify prefix
 cleanPath := filepath.Clean(filepath.Join(baseDir, userInput))
 if !strings.HasPrefix(cleanPath, baseDir) {
     return errors.New("invalid path")
 }
 ```
 
-**触发条件：** userInput 包含 `../` 序列  
-**检查点：** 所有文件路径拼接处，特别是 `filepath.Join` + 用户输入
+**Trigger condition:** userInput contains `../` sequences
+**Check point:** all file path join sites; especially `filepath.Join` + user input
 
 ---
 
-## 敏感信息日志
+## Sensitive Info in Logs
 
 ```go
-// ❌ 危险：密码/token 直接打印
+// DANGEROUS: password/token printed directly
 log.Printf("login: user=%s password=%s", username, password)
 log.Printf("token: %s", authToken)
 
-// ✅ 安全：脱敏处理
+// SAFE: mask sensitive data
 log.Printf("login: user=%s", username)
 ```
 
-**检查点：** 所有 `log.Printf`、`fmt.Println`、`zap.Info` 等日志调用，
-搜索关键词：`password`、`token`、`secret`、`key`、`credential`
+**Check point:** all `log.Printf`, `fmt.Println`, `zap.Info` log calls;
+search keywords: `password`, `token`, `secret`, `key`, `credential`
 
 ---
 
-## 硬编码密钥
+## Hardcoded Secrets
 
 ```go
-// ❌ 危险：代码中直接写密钥
+// DANGEROUS: secrets written directly in code
 const apiKey = "sk-1234567890abcdef"
 password := "admin123"
 jwtSecret := []byte("mysecret")
 
-// ✅ 安全：从环境变量或配置文件读取
+// SAFE: read from environment variables or config files
 apiKey := os.Getenv("API_KEY")
 ```
 
-**检查点：** 搜索 `password =`、`secret =`、`token =`、`key =`、`apiKey`，
-检查赋值是否为字符串字面量
+**Check point:** search for `password =`, `secret =`, `token =`, `key =`, `apiKey`;
+check if the assignment is a string literal
 
 ---
 
-## 不安全随机数
+## Insecure Random Numbers
 
 ```go
-// ❌ 危险：math/rand 可预测
+// DANGEROUS: math/rand is predictable
 import "math/rand"
 token := fmt.Sprintf("%d", rand.Int63())
 
-// ✅ 安全：crypto/rand
+// SAFE: crypto/rand
 import "crypto/rand"
 b := make([]byte, 32)
 rand.Read(b)
 token := hex.EncodeToString(b)
 ```
 
-**触发条件：** 用于生成 session token、CSRF token、密码重置链接等安全相关随机值  
-**检查点：** 所有 `math/rand` 使用处，判断是否用于安全相关场景
+**Trigger condition:** used to generate session tokens, CSRF tokens, password reset links, or other security-related random values
+**Check point:** all `math/rand` usage; determine if used in security-related scenarios
 
 ---
 
-## SSRF（服务端请求伪造）
+## SSRF (Server-Side Request Forgery)
 
 ```go
-// ❌ 危险：直接使用用户提供的 URL 发起请求
+// DANGEROUS: directly using user-provided URL to make requests
 resp, err := http.Get(userProvidedURL)
 
-// ✅ 安全：验证 URL 的 host 在白名单内
+// SAFE: verify URL host is in a whitelist
 allowedHosts := map[string]bool{"api.example.com": true}
 u, _ := url.Parse(userProvidedURL)
 if !allowedHosts[u.Host] {
@@ -120,20 +120,20 @@ if !allowedHosts[u.Host] {
 }
 ```
 
-**触发条件：** userProvidedURL 指向内网地址（如 `http://169.254.169.254/`）可访问云元数据
+**Trigger condition:** userProvidedURL points to an internal address (e.g. `http://169.254.169.254/`) that can access cloud metadata
 
 ---
 
-## 不安全的反序列化
+## Insecure Deserialization
 
 ```go
-// ❌ 危险：反序列化不可信数据到接口类型
+// DANGEROUS: deserializing untrusted data into interface type
 var result interface{}
 json.Unmarshal(userInput, &result)
-// 若后续对 result 做类型断言，可能 panic
+// if result is later type-asserted, may panic
 
-// ❌ 更危险：使用 encoding/gob 反序列化不可信数据
-// gob 可触发任意类型的方法调用
+// MORE DANGEROUS: using encoding/gob to deserialize untrusted data
+// gob can trigger arbitrary type method calls
 ```
 
-**检查点：** `json.Unmarshal`、`gob.Decode`、`yaml.Unmarshal` 的数据来源是否可信
+**Check point:** whether the data source for `json.Unmarshal`, `gob.Decode`, `yaml.Unmarshal` is trusted

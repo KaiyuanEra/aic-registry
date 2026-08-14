@@ -2,169 +2,169 @@
 name: git-commit
 version: 1.0.4
 description: >
-  根据 git 变更和开发上下文生成规范的中文 commit message 并执行提交。
+  Generate standardized commit messages from git changes and development context, then execute the commit.
   Use when committing code, writing a commit message, or completing a development task,
-  or when user mentions 提交代码、帮我 commit、写个 commit、commit 一下、
-  代码写完了、task 完成了、帮我提交、git commit。
-  Do NOT use for git push、merge、rebase、cherry-pick 等其他 git 操作，
-  只查看 git 状态，或拉取远端代码。
+  or when user mentions commit my code, write a commit message, stage and commit,
+  code is done, task is complete, or git commit.
+  Do NOT use for git push, merge, rebase, cherry-pick or other git operations,
+  only viewing git status, or pulling remote code.
 tags: [git, dev-workflow, commit]
 env-required: false
 ---
 
 # git-commit
 
-根据暂存区变更（`git diff --staged`）和开发上下文，生成规范的中文 commit message 并确认提交。
+Generate a standardized commit message from staged changes (`git diff --staged`) and development context, then confirm and execute the commit.
 
-**设计原则：** 能关联就关联，不强制；服务中文开发者阅读习惯。
-
----
-
-## 执行前检查
-
-```
-暂存区为空？
-  是 → 提示：请先 git add 目标文件，再执行提交
-  否 → 继续
-```
+**Design principle:** link when possible, do not force it; serves developer reading habits.
 
 ---
 
-## 上下文感知链
-
-按序检测，自动推断关联 Task 和 Issue：
+## Pre-Execution Check
 
 ```
-① 检测 docs/dev-plan.md
-   存在 → 读取进行中 Task 列表，提取"涉及文件"字段
-
-② 交叉匹配变更文件路径
-   变更文件 ∩ Task 涉及文件 → 推断关联 Task 和 Issue 编号
-
-③ 检测 git branch 名称
-   含 issue-{n} 或 #{n} → 提取 Issue 编号
-
-④ 以上均无 → 独立模式，纯根据 diff 内容生成 commit
-
-感知结果展示给用户确认，不静默关联
+Staging area empty?
+  yes -> prompt: please git add the target files first, then commit
+  no  -> continue
 ```
 
 ---
 
-## Commit Message 规范
+## Context Awareness Chain
 
-**格式：**
+Detect in order; auto-infer associated Task and Issue:
+
 ```
-{type}({scope}): {中文描述}
+1. Detect docs/dev-plan.md
+   exists -> read in-progress Task list; extract "files involved" field
 
-{正文（可选）}
+2. Cross-match changed file paths
+   changed files intersection Task files -> infer associated Task and Issue number
 
-{footer（可选）}
+3. Detect git branch name
+   contains issue-{n} or #{n} -> extract Issue number
+
+4. None of the above -> standalone mode; generate commit purely from diff content
+
+Show detection results to the user for confirmation; do not link silently
 ```
 
-**type 枚举：**
+---
 
-| type | 含义 | 示例场景 |
+## Commit Message Format
+
+**Format:**
+```
+{type}({scope}): {English description}
+
+{body (optional)}
+
+{footer (optional)}
+```
+
+**type enum:**
+
+| type | meaning | example scenario |
 |------|------|----------|
-| `feat` | 新功能 | 实现新命令、新模块 |
-| `fix` | 修复 bug | 修复链接创建失败 |
-| `refactor` | 重构 | 不改行为，优化结构 |
-| `docs` | 文档变更 | 更新 dev-plan.md、README |
-| `chore` | 工程配置 | 修改 Makefile、依赖更新 |
-| `test` | 测试相关 | 添加单测、修复测试 |
-| `perf` | 性能优化 | 减少不必要 API 调用 |
+| `feat` | new feature | implement new command, new module |
+| `fix` | bug fix | fix symlink creation failure |
+| `refactor` | refactoring | no behavior change, optimize structure |
+| `docs` | documentation | update dev-plan.md, README |
+| `chore` | engineering config | modify Makefile, dependency update |
+| `test` | testing | add unit tests, fix tests |
+| `perf` | performance optimization | reduce unnecessary API calls |
 
-**标题行规范：**
-- 中文描述，动词开头，20–50 字
-- scope 用模块名，不用文件名
-- 不加句号结尾
+**Title line rules:**
+- English description, verb-first, 20-50 characters
+- scope uses module name, not file name
+- no trailing period
 
-**footer 关联 Issue：**
+**footer Issue linking:**
 ```
-进行中（不关闭）：Refs #42
-完成并关闭：     Closes #42   ← 由步骤 5 Task 完成状态决定，不手动判断
-多个：           Refs #42, #43 / Closes #44
-新项目无 Issue：  footer 留空
+In progress (do not close): Refs #42
+Completed and close:        Closes #42   <- determined by Step 5 Task completion status; do not judge manually
+Multiple:                   Refs #42, #43 / Closes #44
+New project no issues:      footer left empty
 ```
 
-type/scope 详细选择指南见 [references/type-scope-guide.md](references/type-scope-guide.md)，
-各场景示例见 [references/examples.md](references/examples.md)。
+See [references/type-scope-guide.md](references/type-scope-guide.md) for detailed type/scope selection,
+and [references/examples.md](references/examples.md) for scenario examples.
 
 ---
 
-## 工作流程
+## Workflow
 
-1. **读取变更** — `git diff --staged`，分析变更文件和改动性质
-2. **感知上下文** — 运行 `scripts/context-detect.sh` 检测 dev-plan 和 branch
-3. **生成草稿** — 输出 commit message 并展示确认界面：
-
-```
-┌─ 建议的 commit message ──────────────────────────────┐
-│                                                       │
-│  feat(parser): 实现 SKILL.md frontmatter 解析          │
-│                                                       │
-│  新增 ParseSkill() 函数，解析 YAML 头提取              │
-│  name/version/description/env-required 字段，          │
-│  version 格式非 semver 时返回明确错误。                │
-│                                                       │
-│  Closes #42                                           │
-│                                                       │
-│  变更文件：internal/skill/parser.go (+120 -0)          │
-│           internal/skill/model.go  (+45 -3)           │
-└───────────────────────────────────────────────────────┘
-
-[y] 确认提交  [e] 编辑后提交  [r] 重新生成  [n] 取消
-```
-
-4. **执行提交** — 用户确认后执行 `git commit`
-5. **同步 dev-plan.md 并关闭 Issue** — 提交成功后，若关联了 Task，询问该 Task 是否已完成：
+1. **Read changes** — `git diff --staged`; analyze changed files and modification nature
+2. **Detect context** — run `scripts/context-detect.sh` to detect dev-plan and branch
+3. **Generate draft** — output commit message and show confirmation UI:
 
 ```
-关联 Task 已完成？
-  是 → 运行 scripts/close-issue.sh <issue_number>
-       脚本负责：① 调用 GitLab/GitHub API 关闭 Issue
-                ② 更新 dev-plan.md 中对应 Task 状态为"已完成"
-       commit message footer 使用 Closes #n
-       将 dev-plan.md 变更追加到本次 commit（git commit --amend）
-       或作为独立 docs commit（用户可选）
-  否 → 状态保持"进行中"，footer 使用 Refs #n，不修改 dev-plan.md
++-- Suggested commit message -------------------------+
+|                                                     |
+|  feat(parser): implement SKILL.md frontmatter parsing|
+|                                                     |
+|  Add ParseSkill() function to parse YAML header and  |
+|  extract name/version/description/env-required fields;|
+|  return a clear error when version is not semver.    |
+|                                                     |
+|  Closes #42                                         |
+|                                                     |
+|  Changed files: internal/skill/parser.go (+120 -0)   |
+|                 internal/skill/model.go  (+45 -3)    |
++-----------------------------------------------------+
 
-dev-plan.md 不存在 → 跳过此步骤
-未关联任何 Task   → 跳过此步骤
+[y] confirm commit  [e] edit then commit  [r] regenerate  [n] cancel
 ```
 
-> 脚本自动从 `git remote origin` 推断平台（GitLab/GitHub）和项目路径。
-> Token 读取优先级：当前项目 `.aic/.aic-env` → `~/.aic/aic-env` → shell 环境变量。
-> 未找到 token 时**不报错、不阻断提交**，仅跳过关闭 Issue 步骤并提示配置方式。
-> 推荐通过安装 `glab-manage` skill 统一管理 `GITLAB_TOKEN`（`aic env add GITLAB_TOKEN`）。
-> 可先用 `--dry-run` 预览不实际调用 API：
+4. **Execute commit** — run `git commit` after user confirmation
+5. **Sync dev-plan.md and close Issue** — after successful commit, if a Task was linked, ask whether that Task is complete:
+
+```
+Linked Task complete?
+  yes -> run scripts/close-issue.sh <issue_number>
+         script handles: 1. call GitLab/GitHub API to close Issue
+                         2. update the corresponding Task status in dev-plan.md to "completed"
+         commit message footer uses Closes #n
+         append dev-plan.md changes to this commit (git commit --amend)
+         or as a separate docs commit (user choice)
+  no  -> status stays "in progress"; footer uses Refs #n; do not modify dev-plan.md
+
+dev-plan.md does not exist -> skip this step
+No Task linked              -> skip this step
+```
+
+> The script auto-infers the platform (GitLab/GitHub) and project path from `git remote origin`.
+> Token read priority: current project `.aic/.aic-env` -> `~/.aic/aic-env` -> shell environment variables.
+> When no token is found, **do not error or block the commit**; only skip the Issue close step and prompt configuration instructions.
+> Recommend installing the `glab-manage` skill to manage `GITLAB_TOKEN` centrally (`aic env add GITLAB_TOKEN`).
+> Preview without calling the API using `--dry-run`:
 > `bash scripts/close-issue.sh 42 --dry-run`
 
-6. **提示 push** — 提交完成后询问是否 `git push`（不自动执行）
+6. **Prompt push** — ask whether to `git push` after commit (do not auto-execute)
 
 ---
 
-## 新项目 vs 老项目
+## New Project vs Legacy Project
 
 ```
-新项目简化模式（满足任一）：
-  ① dev-plan.md 中 Task 的 Issue 字段全部为"#（待创建）"
-  ② 用户明确说"还没建 issue"
+New project simplified mode (either condition):
+  1. All Task Issue fields in dev-plan.md are "#(pending)"
+  2. User explicitly says "no issues created yet"
 
-  → footer 留空，正文可选，重点保证标题格式正确
+  -> footer left empty; body optional; focus on correct title format
 
-老项目标准模式：
-  → 尽量关联 Issue，复杂变更补充正文，严格 type/scope
+Legacy project standard mode:
+  -> link Issues where possible; add body for complex changes; strict type/scope
 ```
 
 ---
 
-## 常见边缘情况
+## Common Edge Cases
 
-| 情况 | 处理方式 |
+| Case | Handling |
 |------|----------|
-| 变更横跨多个 Task | 拆分为多次 commit，每次只提交相关文件 |
-| 无法判断 type | 输出变更分析，列出候选 type 让用户选择 |
-| 关联到多个 Issue | footer 列出所有：`Refs #42, #43` |
-| dev-plan.md 不存在 | 降级为独立模式，不影响 commit 生成 |
-| 暂存了非预期文件 | 展示 staged 文件列表，提示确认后再继续 |
+| Changes span multiple Tasks | Split into multiple commits; only commit relevant files each time |
+| Cannot determine type | Output change analysis; list candidate types for user to choose |
+| Linked to multiple Issues | List all in footer: `Refs #42, #43` |
+| dev-plan.md does not exist | Degrade to standalone mode; does not affect commit generation |
+| Unexpected files staged | Show staged file list; prompt confirmation before continuing |

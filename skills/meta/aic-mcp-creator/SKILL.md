@@ -2,43 +2,45 @@
 name: aic-mcp-creator
 version: 1.1.0
 description: >
-  为 aic registry 创建、审查和增量更新结构化 MCP server 包，生成并校验
-  mcp-servers/<name>/MCP-SERVER.md，处理 stdio、SSE 和 Streamable HTTP transport、
-  环境变量占位符、目标客户端能力、版本递增及 mcp-servers/index.yaml。
-  Use when 用户要求新增 MCP server 定义、编写 MCP-SERVER.md、把 MCP 配置收录进 registry、
-  修改已有 MCP 源模型，或检查 MCP transport 与 Claude/Codex/Gemini/OpenCode 的兼容性。
-  Do NOT use for 实现 aic 客户端 parser/adapter、直接改写 IDE 原生 MCP 配置、启动 MCP server，
-  或编写普通 Skill、Context 和一次性 MCP 使用说明。
+  Create, review, and incrementally update structured MCP server packages for the aic registry,
+  generating and validating mcp-servers/<name>/MCP-SERVER.md. Handles stdio, SSE, and Streamable
+  HTTP transports, environment variable placeholders, target client capabilities, version bumping,
+  and mcp-servers/index.yaml.
+  Use when user requests adding an MCP server definition, writing an MCP-SERVER.md, registering an
+  MCP config into the registry, modifying an existing MCP source model, or checking MCP transport
+  compatibility with Claude/Codex/Gemini/OpenCode.
+  Do NOT use for implementing aic client parser/adapter, directly editing IDE native MCP config,
+  starting an MCP server, or writing ordinary skills, contexts, or one-off MCP usage guides.
 tags: [mcp, meta, registry-authoring]
 env-required: false
 ---
 # MCP Creator
 
-创建一个可版本化的 MCP 源定义。一个 MCP 包只有一个 `MCP-SERVER.md`；YAML frontmatter 是配置的唯一数据源，正文只写人类可读说明。
+Create a versionable MCP source definition. One MCP package has a single MCP-SERVER.md; the YAML frontmatter is the sole source of configuration, and the body contains only human-readable documentation.
 
-## 开始前
+## Before You Start
 
-1. 确认仓库包含 `mcp-servers/` 或 `scripts/indexgen/indexgen.py`；两者都没有时停止，说明当前仓库不是支持的 registry 布局。
-2. 阅读 [源模型契约](references/source-model.md)。涉及变量时再读 [变量规则](references/variables.md)；选择 transport 或 targets 时读 [transport 与客户端能力](references/transports.md)。需要完整样例时读 [示例](references/examples.md)。
-3. 判断任务是首次创建、增量修改还是审查。只创建或修改 registry 源定义，不实现 aic parser、adapter 或客户端写入逻辑。
-4. 从用户提供的命令、URL、header、目标客户端和说明中提取事实。不得猜测命令参数、认证 header、私有地址或客户端支持能力。
+1. Confirm the repository contains mcp-servers/ or scripts/indexgen/indexgen.py; if neither exists, stop and explain that the current repository is not a supported registry layout.
+2. Read the [source model contract](references/source-model.md). When variables are involved, also read [variable rules](references/variables.md); when choosing transport or targets, read [transport and client capabilities](references/transports.md). For complete samples, read [examples](references/examples.md).
+3. Determine whether the task is first-time creation, incremental modification, or review. Only create or modify registry source definitions; do not implement aic parser, adapter, or client write logic.
+4. Extract facts from the command, URL, headers, target clients, and description provided by the user. Never guess command arguments, auth headers, private addresses, or client support capabilities.
 
-## 生成或修改
+## Generate or Modify
 
-1. 创建 `mcp-servers/<name>/MCP-SERVER.md`。目录名、frontmatter `name` 和索引名称必须一致，并匹配 `^[a-z0-9]+(-[a-z0-9]+)*$`。
-2. 只声明一个 `transport`：`stdio`、`sse` 或 `streamable-http`。严格应用对应字段的必填、允许和禁止规则。
-3. `targets` 只使用 `claude`、`codex`、`gemini`、`opencode`，不得重复。写文件前按能力矩阵拒绝不支持的组合；绝不在 SSE 与 Streamable HTTP 之间自动转换。
-4. 把结构化配置全部放进 frontmatter。正文至少写清用途和必要的运行前提，但不得作为 adapter 输入，也不得重复维护可执行配置。
-5. 创建或修改 `stdio` MCP 时，若不能从用户输入或官方分发说明中确定 Windows 启动命令，必须询问用户是否需要 Windows 适配；需要时索要明确的 `platforms.windows.command` 和 `platforms.windows.args`。不得猜测 `npx.cmd`、`.exe`、`cmd /c`、PowerShell 或 shell 包装。
-6. 对变量使用 `{{ aic.env.NAME }}`，只允许出现在 `command`、`args`、`cwd`、`env`、`url`、`headers`、`platforms.<goos>.command`、`platforms.<goos>.args` 的字符串值中。变量必须在 `env-vars` 声明，名称匹配 `^[A-Z][A-Z0-9_]*$`、区分大小写、不得重复，且 `target` 固定为 `mcp`。
-7. 变量替换的语义是“先解析 YAML，再替换允许字段的字符串值”。不得建议或生成先替换原始 YAML 再解析的流程。
-8. 新包从 `1.0.0` 开始。修改已发布包的正文或任一 frontmatter 字段时必须递增版本：小修升 PATCH，向后兼容的能力扩展升 MINOR，不兼容契约变化升 MAJOR。
-9. 默认产物不得包含 TODO、空白占位符或“待用户确认”。信息不足且会影响运行配置时先询问用户；非必要信息直接省略。只有用户明确要求脚手架时才允许保留占位符。
-10. 修改已有包时只做局部编辑，保留未涉及字段和正文。用户明确要求直接修改时即可落盘，否则先说明将改变的字段。
+1. Create mcp-servers/<name>/MCP-SERVER.md. The directory name, frontmatter name, and index entry name must all match and conform to ^[a-z0-9]+(-[a-z0-9]+)*$.
+2. Declare exactly one transport: stdio, sse, or streamable-http. Strictly apply the required, allowed, and forbidden rules for the corresponding fields.
+3. targets may only use claude, codex, gemini, opencode, with no duplicates. Before writing the file, reject unsupported combinations using the capability matrix; never auto-convert between SSE and Streamable HTTP.
+4. Put all structured configuration in the frontmatter. The body should at minimum explain the purpose and necessary runtime prerequisites, but must not serve as adapter input or duplicate maintainable executable configuration.
+5. When creating or modifying a stdio MCP, if the Windows launch command cannot be determined from user input or official distribution instructions, you must ask the user whether Windows adaptation is needed; if so, request explicit platforms.windows.command and platforms.windows.args. Never guess npx.cmd, .exe, cmd /c, PowerShell, or shell wrappers.
+6. Use {{ aic.env.NAME }} for variables, allowed only in string values of command, args, cwd, env, url, headers, platforms.<goos>.command, and platforms.<goos>.args. Variables must be declared in env-vars, with names matching ^[A-Z][A-Z0-9_]*$, case-sensitive, no duplicates, and target fixed to mcp.
+7. Variable substitution semantics are "parse YAML first, then replace string values in allowed fields". Never suggest or generate a flow that replaces raw YAML text before parsing.
+8. New packages start at 1.0.0. When modifying the body or any frontmatter field of a published package, you must bump the version: PATCH for minor fixes, MINOR for backward-compatible capability extensions, MAJOR for incompatible contract changes.
+9. The default deliverable must not contain TODOs, blank placeholders, or "pending user confirmation". When information is insufficient and would affect runtime configuration, ask the user first; for non-essential information, simply omit it. Placeholders are only allowed when the user explicitly requests scaffolding.
+10. When modifying an existing package, make only local edits, preserving untouched fields and body. If the user explicitly requests direct modification, write to disk; otherwise, first explain which fields will change.
 
-## 刷新与验证
+## Refresh and Validate
 
-完成文件后运行：
+After completing the file, run:
 
 ```bash
 make index
@@ -47,10 +49,10 @@ make validate
 git diff -- mcp-servers/<name> mcp-servers/index.yaml skills/index.yaml
 ```
 
-`mcp-servers/index.yaml` 是生成文件，不让用户手工维护。生成器递归扫描 `mcp-servers/**/MCP-SERVER.md`，条目版本来自源文件，registry 版本来自根目录 `VERSION`。
+mcp-servers/index.yaml is a generated file; do not have users maintain it manually. The generator recursively scans mcp-servers/**/MCP-SERVER.md; entry versions come from the source file, and the registry version comes from the root VERSION.
 
-验证必须覆盖：YAML 无重复键；公共字段完整；transport 字段互斥；target 能力匹配；timeout 是正数 Go duration；变量声明与引用一一对应；正文不参与配置；已有包版本已递增；索引的 version、description 和 path 与源文件一致。
+Validation must cover: YAML has no duplicate keys; common fields are complete; transport fields are mutually exclusive; target capabilities match; timeout is a positive Go duration; variable declarations and references correspond one-to-one; the body does not participate in configuration; existing package versions have been bumped; the index version, description, and path match the source file.
 
-## 交付
+## Delivery
 
-说明 MCP 名称、transport、targets、版本变化、修改文件和验证结果。明确说明索引已由生成器刷新。不要声称已经生成客户端原生配置；那属于 aic adapter 的职责。
+State the MCP name, transport, targets, version change, modified files, and validation results. Explicitly state that the index has been refreshed by the generator. Do not claim that client native configs have been generated; that is the responsibility of the aic adapter.

@@ -1,127 +1,128 @@
-# type/scope 选择指南
 
-## type 选择决策树
+# type/scope Selection Guide
+
+## type Selection Decision Tree
 
 ```
-这次提交...
+This commit...
 
-改变了功能行为？
-  是 → 是修复已有 bug？
-         是 → fix
-         否 → feat
-  否 → 改动了测试文件？
-         是 → test
-         否 → 改动了文档 / 注释？
-                是 → docs
-                否 → 改动了构建 / 配置 / 依赖？
-                       是 → chore
-                       否 → 重构了代码（不改行为）？
-                              是 → refactor
-                              否 → 提升了性能？
-                                     是 → perf
-                                     否 → chore（兜底）
+Changed functional behavior?
+  yes -> Is it fixing an existing bug?
+           yes -> fix
+           no  -> feat
+  no  -> Changed test files?
+           yes -> test
+           no  -> Changed docs / comments?
+                  yes -> docs
+                  no  -> Changed build / config / dependencies?
+                         yes -> chore
+                         no  -> Refactored code (no behavior change)?
+                                yes -> refactor
+                                no  -> Improved performance?
+                                       yes -> perf
+                                       no  -> chore (fallback)
 ```
 
 ---
 
-## type 使用边界说明
+## type Boundary Notes
 
 ### feat vs fix
 
 ```
-feat：之前不存在这个功能，现在加了
-fix：之前有这个功能但行为不对，现在修对了
+feat: this feature did not exist before; now it is added
+fix: this feature existed but behaved incorrectly; now it is fixed
 
-边界模糊时：
-  "添加了对 XXX 边缘情况的处理" → fix（完善已有功能的正确性）
-  "添加了全新的 XXX 命令" → feat
+When the boundary is blurry:
+  "Added handling for an XXX edge case" -> fix (improving correctness of an existing feature)
+  "Added a brand-new XXX command" -> feat
 ```
 
 ### refactor vs fix
 
 ```
-refactor：外部行为完全不变，只是内部结构变了
-fix：外部行为变了（即使改动很小）
+refactor: external behavior is completely unchanged; only internal structure changed
+fix: external behavior changed (even if the change is tiny)
 
-判断方法：测试用例是否需要修改？
-  不需要修改 → refactor
-  需要修改   → fix 或 feat
+Judgment method: do test cases need modification?
+  No  -> refactor
+  Yes -> fix or feat
 ```
 
 ### chore vs docs
 
 ```
-docs：改动的是 .md / 注释 / 文档生成配置
-chore：改动的是 Makefile / CI 配置 / .gitignore / 依赖版本
+docs: changes are to .md / comments / doc generation config
+chore: changes are to Makefile / CI config / .gitignore / dependency versions
 
-混合情况：以改动量大的为准，或拆分为两次 commit
+Mixed case: go with whichever has more changes, or split into two commits
 ```
 
 ---
 
-## scope 命名规范
+## scope Naming Convention
 
-scope 来源：项目的模块结构，不是文件名。
+scope source: the project module structure, not file names.
 
-### aic 项目的 scope
+### aic project scopes
 
-| scope | 对应模块 | 示例文件 |
+| scope | Corresponding module | Example files |
 |-------|---------|----------|
-| `install` | 安装命令 | cmd/aic/main.go（install 分支）|
-| `sync` | 同步命令 | cmd/aic/main.go（sync 分支）|
-| `list` | 列表/浏览 TUI | internal/ui/list/ |
-| `env` | 环境变量管理 | internal/env/ |
-| `config` | 配置读写 | internal/config/ |
-| `registry` | GitLab 仓库操作 | internal/registry/ |
-| `linker` | 软链接管理 | internal/linker/ |
-| `parser` | SKILL.md 解析 | internal/skill/parser.go |
-| `ui` | TUI 通用组件 | internal/ui/ |
+| `install` | install command | cmd/aic/main.go (install branch)|
+| `sync` | sync command | cmd/aic/main.go (sync branch)|
+| `list` | list/browse TUI | internal/ui/list/ |
+| `env` | environment variable management | internal/env/ |
+| `config` | config read/write | internal/config/ |
+| `registry` | GitLab repository operations | internal/registry/ |
+| `linker` | symlink management | internal/linker/ |
+| `parser` | SKILL.md parsing | internal/skill/parser.go |
+| `ui` | TUI common components | internal/ui/ |
 
-### 通用 scope（任何项目适用）
+### Generic scopes (any project)
 
-| scope | 用途 |
+| scope | Purpose |
 |-------|------|
-| `api` | API 接口层 |
-| `db` | 数据库相关 |
-| `auth` | 认证授权 |
-| `config` | 配置管理 |
+| `api` | API interface layer |
+| `db` | database related |
+| `auth` | authentication and authorization |
+| `config` | configuration management |
 
-### 何时省略 scope
+### When to omit scope
 
-变更范围跨越多个模块，或是全局性修改时，scope 可以省略：
+When the change spans multiple modules or is a global modification, scope can be omitted:
 
 ```
-docs: 更新开发计划，同步 Phase 2 的 Issue 编号
-chore: 升级所有依赖到最新版本
-refactor: 统一错误处理方式
+docs: update development plan, sync Phase 2 issue numbers
+chore: upgrade all dependencies to latest versions
+refactor: unify error handling approach
 ```
 
 ---
 
-## 特殊场景
+## Special Scenarios
 
 ### Merge / Squash commit
 
-合并分支时的 commit，type 选择合并内容的主体类型，正文可列出包含的 commit：
+For branch merge commits, select the type matching the main content; the body can list included commits:
 
 ```
-feat(install): 完成 aic install 命令全部功能
+feat(install): complete all aic install command features
 
-包含：
-- feat(parser): 实现 SKILL.md frontmatter 解析
-- feat(registry): 实现 GitLab clone/pull
-- feat(linker): 实现软链接创建
-- test(install): 添加 install 命令集成测试
+Includes:
+- feat(parser): implement SKILL.md frontmatter parsing
+- feat(registry): implement GitLab clone/pull
+- feat(linker): implement symlink creation
+- test(install): add install command integration tests
 
 Closes #5, #6, #7, #8
 ```
 
-### 回滚 commit
+### Revert commit
 
 ```
-revert: feat(linker): 实现软链接创建
+revert: feat(linker): implement symlink creation
 
-原因：引入了竞态条件，暂时回滚等待修复。
+Reason: introduced a race condition; temporarily reverting pending a fix.
 Reverts commit abc1234.
 Refs #15
 ```

@@ -1,52 +1,52 @@
-# 并发问题专项
+# Concurrency Issues
 
 ---
 
-## goroutine 泄漏识别模式
+## goroutine Leak Detection Patterns
 
-### 模式 1：channel 永不关闭
+### Pattern 1: channel never closed
 
 ```go
-// ❌ 泄漏：producer 不关闭 ch，consumer goroutine 永远阻塞
+// LEAK: producer does not close ch; consumer goroutine blocks forever
 func leak() {
     ch := make(chan int)
     go func() {
-        for v := range ch {  // ch 永不关闭，goroutine 永不退出
+        for v := range ch {  // ch never closed; goroutine never exits
             process(v)
         }
     }()
-    // ch 超出作用域，但 goroutine 仍在运行
+    // ch goes out of scope, but goroutine still running
 }
 ```
 
-**识别特征：** goroutine 函数体中有 `for range ch` 或 `<-ch`，但 ch 的关闭路径不明确
+**Detection signature:** goroutine body has `for range ch` or `<-ch`, but ch close path is unclear
 
-### 模式 2：无 context 的阻塞调用
+### Pattern 2: blocking call without context
 
 ```go
-// ❌ 泄漏：没有超时/取消机制
+// LEAK: no timeout/cancellation mechanism
 go func() {
-    result := <-longRunningChan  // 若 longRunningChan 永不发送，goroutine 永远阻塞
+    result := <-longRunningChan  // if longRunningChan never sends, goroutine blocks forever
     process(result)
 }()
 ```
 
-**修复方向：** 使用 `select { case result := <-ch: ... case <-ctx.Done(): return }`
+**Fix direction:** use `select { case result := <-ch: ... case <-ctx.Done(): return }`
 
-### 模式 3：WaitGroup 计数错误
+### Pattern 3: WaitGroup count error
 
 ```go
-// ❌ 危险：wg.Add 在 goroutine 内部调用，可能在 wg.Wait 之后才执行
+// DANGEROUS: wg.Add called inside goroutine; may execute after wg.Wait
 for _, item := range items {
     go func(item Item) {
-        wg.Add(1)  // 错误：应在 goroutine 外调用
+        wg.Add(1)  // wrong: should be called outside goroutine
         defer wg.Done()
         process(item)
     }(item)
 }
 wg.Wait()
 
-// ✅ 安全
+// SAFE
 for _, item := range items {
     wg.Add(1)
     go func(item Item) {
@@ -58,18 +58,18 @@ for _, item := range items {
 
 ---
 
-## 竞争条件
+## Race Conditions
 
-### map 并发读写
+### map concurrent read/write
 
 ```go
-// ❌ 危险：Go map 不是并发安全的
+// DANGEROUS: Go map is not concurrency-safe
 var cache = make(map[string]string)
 
-func set(k, v string) { cache[k] = v }  // 并发写
-func get(k string) string { return cache[k] }  // 并发读
+func set(k, v string) { cache[k] = v }  // concurrent write
+func get(k string) string { return cache[k] }  // concurrent read
 
-// ✅ 安全：使用 sync.Map 或加锁
+// SAFE: use sync.Map or add a lock
 var mu sync.RWMutex
 var cache = make(map[string]string)
 
@@ -80,44 +80,44 @@ func set(k, v string) {
 }
 ```
 
-**识别特征：** map 变量在多个 goroutine 中读写，且没有 mutex 保护
+**Detection signature:** map variable read/written in multiple goroutines without mutex protection
 
-### 共享变量无锁保护
+### Shared variable without lock protection
 
 ```go
-// ❌ 危险：counter 在多个 goroutine 中并发修改
+// DANGEROUS: counter modified concurrently by multiple goroutines
 var counter int
 
-func increment() { counter++ }  // 非原子操作，存在竞争
+func increment() { counter++ }  // non-atomic; race condition
 
-// ✅ 安全
+// SAFE
 var counter int64
 func increment() { atomic.AddInt64(&counter, 1) }
 ```
 
 ---
 
-## 死锁模式
+## Deadlock Patterns
 
-### 锁顺序不一致
+### Inconsistent lock order
 
 ```go
-// ❌ 危险：两个 goroutine 以相反顺序获取锁
-// goroutine 1: lock(A) → lock(B)
-// goroutine 2: lock(B) → lock(A)
-// 可能死锁
+// DANGEROUS: two goroutines acquire locks in opposite order
+// goroutine 1: lock(A) -> lock(B)
+// goroutine 2: lock(B) -> lock(A)
+// potential deadlock
 ```
 
-**识别特征：** 同一组锁在不同函数中以不同顺序获取
+**Detection signature:** same set of locks acquired in different order in different functions
 
-### channel 死锁
+### channel deadlock
 
 ```go
-// ❌ 危险：向无缓冲 channel 发送，但没有接收方
+// DANGEROUS: send to unbuffered channel with no receiver
 ch := make(chan int)
-ch <- 1  // 永远阻塞，没有 goroutine 接收
+ch <- 1  // blocks forever; no goroutine receiving
 
-// ❌ 危险：goroutine 互相等待对方的 channel
+// DANGEROUS: goroutines waiting on each other channels
 ch1 := make(chan int)
 ch2 := make(chan int)
 go func() { ch1 <- <-ch2 }()
@@ -126,35 +126,35 @@ go func() { ch2 <- <-ch1 }()
 
 ---
 
-## sync 包误用
+## sync Package Misuse
 
-### sync.Mutex 值拷贝
+### sync.Mutex value copy
 
 ```go
-// ❌ 危险：Mutex 被值拷贝后，两个副本独立，失去互斥效果
+// DANGEROUS: Mutex copied by value; two independent copies lose mutual exclusion
 type Cache struct {
     mu   sync.Mutex
     data map[string]string
 }
 
-func process(c Cache) {  // 值传递，mu 被拷贝
+func process(c Cache) {  // pass by value; mu copied
     c.mu.Lock()
     defer c.mu.Unlock()
-    // 这个锁和原始 Cache 的锁是不同的
+    // this lock is different from the original Cache lock
 }
 
-// ✅ 安全：使用指针接收者
+// SAFE: use pointer receiver
 func process(c *Cache) { ... }
 ```
 
-### sync.Once 内部 panic
+### sync.Once internal panic
 
 ```go
-// ❌ 危险：Once.Do 内部 panic 后，Once 标记为已执行，后续调用不会重试
+// DANGEROUS: after panic inside Once.Do, Once is marked as executed; subsequent calls will not retry
 var once sync.Once
 once.Do(func() {
     if err := initialize(); err != nil {
-        panic(err)  // panic 后 once 永远不会再执行
+        panic(err)  // after panic, once will never execute again
     }
 })
 ```

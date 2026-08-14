@@ -1,51 +1,51 @@
-# 项目上下文：迭代与业务演进期
+# Project Context: Iteration and Business Evolution
 
-## 1. 项目定位
+## 1. Project Positioning
 
-- 当前目标是在保持既有架构和业务连续性的前提下，稳定、快速地交付可验证变更。
-- 开始任务前明确业务目标、影响范围、验收标准以及需要人工决策的事项。
-- 对需求范围内的实现细节可以自主推进；涉及公共契约、数据语义、发布策略或跨团队边界时先确认。
-- 不把本次迭代扩展为无关的架构改造或全局规范调整。
+- The current goal is to deliver verifiable changes steadily and quickly while preserving existing architecture and business continuity.
+- Before starting a task, clarify the business goal, impact scope, acceptance criteria, and items requiring manual decision.
+- Implementation details within the requirement scope can be advanced autonomously; when involving public contracts, data semantics, release strategy, or cross-team boundaries, confirm first.
+- Do not expand this iteration into unrelated architecture changes or global convention adjustments.
 
-## 2. 技术栈与架构
+## 2. Tech Stack and Architecture
 
-- 从目标项目已有记忆文件、README、依赖清单和构建配置核验技术栈与准确版本。
-- 修改前定位核心模块、调用方、数据流和测试位置，遵循当前模块边界。
-- 在单体仓库中优先读取离工作目录最近的项目说明，并识别子包自己的命令和约束。
-- 需要跨模块修改时先说明接口变化和受影响的消费者，避免单侧更新造成漂移。
-- 用真实路径引用架构细节，不复制实现代码或维护完整目录树。
+- Verify the tech stack and exact versions from the target project existing memory files, README, dependency manifests, and build config.
+- Before modifying, locate core modules, callers, data flows, and test locations; follow current module boundaries.
+- In a monorepo, prioritize reading the project description closest to the working directory and identify sub-package specific commands and constraints.
+- When cross-module changes are needed, first explain interface changes and affected consumers; avoid drift from one-sided updates.
+- Reference architecture details with real paths; do not copy implementation code or maintain a complete directory tree.
 
-## 3. 常用命令
+## 3. Common Commands
 
-- 只使用目标项目已经声明的依赖安装、本地开发、构建、测试、lint 和格式化命令。
-- 优先复用 CI 实际执行的命令和参数，使本地验证与合并门禁一致。
-- 未找到可靠命令时报告缺口，不根据框架名称推断命令。
-- 先运行与改动直接相关的检查，再按项目要求扩大到完整验证。
+- Only use dependency install, local development, build, test, lint, and formatting commands already declared in the target project.
+- Prioritize reusing the commands and parameters actually executed by CI to keep local validation consistent with merge gates.
+- When no reliable command is found, report the gap; do not infer commands from framework names.
+- First run checks directly related to the change, then expand to full validation per project requirements.
 
-## 4. 代码规范
+## 4. Code Conventions
 
-- 遵循目标模块的现有模式，只记录和执行 linter、formatter 无法强制的设计约定。
-- 新功能放入职责匹配的现有模块；没有真实复用需求时不创建通用抽象。
-- 保持改动聚焦，删除由本次修改产生的无用代码，不清理既有的无关问题。
-- 保持提交和评审内容可追溯：每一行变更都应能对应业务目标或必要验证。
-- 规则细节较多时引用稳定文档，避免长期记忆膨胀和重复。
+- Follow the existing patterns of the target module; only record and enforce design conventions that linters and formatters cannot enforce.
+- Place new features in existing modules with matching responsibilities; do not create generic abstractions without a real reuse need.
+- Keep changes focused; delete orphaned code produced by this change; do not clean up pre-existing unrelated issues.
+- Keep commits and review content traceable: every line of change should map to a business goal or necessary validation.
+- When rules are detailed, reference stable documentation; avoid long-term memory bloat and duplication.
 
-## 5. 禁止事项与高危操作
+## 5. Prohibitions and High-Risk Operations
 
-- 不提交密钥、访问令牌、密码、私有证书或真实敏感数据。
-- 不绕过 CI、删除失败测试或降低断言来制造通过结果。
-- 未获明确授权时，不修改数据库迁移、计费、权限、发布和基础设施等高风险边界。
-- 不静默改变公共 API、事件结构、存储格式或兼容性行为。
+- Do not commit keys, access tokens, passwords, private certificates, or real sensitive data.
+- Do not bypass CI, delete failing tests, or lower assertions to fabricate passing results.
+- Without explicit authorization, do not modify high-risk boundaries such as database migrations, billing, permissions, releases, and infrastructure.
+- Do not silently change public APIs, event structures, storage formats, or compatibility behavior.
 
-## 6. 测试与验证流程
+## 6. Testing and Validation Flow
 
-- 新增或修改逻辑必须有与风险相称的验证；可自动化的回归优先写成测试。
-- 修复缺陷时先建立可复现条件，再验证修复覆盖原问题且未破坏相邻行为。
-- 跨模块契约变更同时验证生产者和消费者；用户流程变更验证完整主路径。
-- 完成前运行项目要求的测试、构建和静态检查，并明确报告任何未执行项及原因。
-- CI 全部通过只是最低条件，还要核对业务验收标准和变更范围。
+- New or modified logic must have validation proportional to the risk; automate regression as tests where possible.
+- When fixing a defect, first establish reproducible conditions, then verify the fix covers the original problem and does not break adjacent behavior.
+- For cross-module contract changes, verify both producer and consumer; for user flow changes, verify the complete main path.
+- Before completion, run the tests, builds, and static checks required by the project; clearly report any unexecuted items and reasons.
+- CI passing is only the minimum condition; also verify business acceptance criteria and change scope.
 
-## 7. 外部文档引用
+## 7. External Documentation References
 
-- 优先读取目标项目中已确认存在的详细设计、API 契约、决策记录和协作规范。
-- 长篇规则保留在所属文档中，长期记忆只记录阅读时机和真实路径。
+- Prioritize reading detailed designs, API contracts, decision records, and collaboration conventions that already exist in the target project.
+- Keep lengthy rules in their source documents; long-term memory records only reading context and real paths.

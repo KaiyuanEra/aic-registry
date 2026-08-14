@@ -1,51 +1,51 @@
-# 项目长期记忆正文模板
+# Project Long-Term Memory Body Template
 
-将本模板用于可直接发布的通用 `content.md`。七个区块的职责必须保留，但不要为了填满区块而制造项目事实或 TODO。
+Use this template for a directly publishable general content.md. The responsibilities of the seven sections must be preserved, but do not fabricate project facts or TODOs to fill sections.
 
 ```markdown
-# 项目上下文
+# Project Context
 
-## 1. 项目定位
+## 1. Project Positioning
 
-- 说明当前开发阶段的目标和质量优先级。
-- 明确 agent 可以自主处理的范围以及需要确认的高风险边界。
+- State the goal and quality priorities for the current development stage.
+- Clarify the scope the agent can handle autonomously and the high-risk boundaries that need confirmation.
 
-## 2. 技术栈与架构
+## 2. Tech Stack and Architecture
 
-- 先从目标项目已有文档和配置核验技术栈、入口与模块边界。
-- 不猜测不存在的模块、版本或目录。
+- Verify the tech stack, entry points, and module boundaries from the target project existing docs and config first.
+- Do not guess non-existent modules, versions, or directories.
 
-## 3. 常用命令
+## 3. Common Commands
 
-- 只使用目标项目已经声明的构建、测试、lint 和启动命令。
-- 未找到命令时说明缺口，不编造命令。
+- Use only build, test, lint, and startup commands already declared in the target project.
+- When a command is not found, explain the gap; do not fabricate commands.
 
-## 4. 代码规范
+## 4. Code Conventions
 
-- 遵循目标项目现有风格，只补充工具无法自动强制的阶段性原则。
+- Follow the target project existing style; only supplement stage-specific principles that tools cannot automatically enforce.
 
-## 5. 禁止事项与高危操作
+## 5. Prohibitions and High-Risk Operations
 
-- 写入该阶段普遍适用、可直接执行的安全边界。
+- Write universally applicable, directly executable safety boundaries for the stage.
 
-## 6. 测试与验证流程
+## 6. Testing and Validation Flow
 
-- 根据阶段定义可验证的完成标准，并报告未执行的验证。
+- Define verifiable completion criteria based on the stage and report unexecuted validations.
 
-## 7. 外部文档引用
+## 7. External Documentation References
 
-- 只引用在目标项目中确认存在的文档；不要复制长篇内容。
+- Reference only documents confirmed to exist in the target project; do not copy long content.
 ```
 
-## 产物类型
+## Deliverable Types
 
-- 通用 context：输出跨项目成立的阶段行为规则，不要求项目专属事实，不包含 TODO。
-- 项目定制 context：生成前收集必要事实，最终文件仍不包含 TODO；非必要信息缺失时直接省略。
-- 待填写脚手架：仅当用户明确要求“模板”“占位符”或“稍后填写”时允许 TODO，并在交付时汇总。
+- General context: outputs cross-project stage behavior rules; does not require project-specific facts and contains no TODOs.
+- Project-specific context: collects necessary facts before generation; the final file still contains no TODOs; when non-essential info is missing, omit it directly.
+- Fill-in scaffold: TODOs are only allowed when the user explicitly requests "template", "placeholder", or "fill in later"; summarize them on delivery.
 
-## 阶段调整
+## Stage Adjustments
 
-- 孵化期：强调快速验证、最小实现、非生产边界和避免过早固化。
-- 迭代期：强调模块边界、团队协作、测试验证和控制规则膨胀。
-- 维护期：强调生产安全、最小改动、回归、发布和回滚。
-- 重构期：强调新旧边界、行为一致性、迁移验证和临时规则失效条件。
+- Incubation: emphasize fast validation, minimal implementation, non-production boundaries, and avoiding premature freezing.
+- Iteration: emphasize module boundaries, team collaboration, test validation, and controlling rule bloat.
+- Maintenance: emphasize production safety, minimal changes, regression, release, and rollback.
+- Refactor: emphasize old/new boundaries, behavior consistency, migration validation, and temporary rule expiry conditions.

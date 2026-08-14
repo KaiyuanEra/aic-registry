@@ -1,12 +1,12 @@
 #!/bin/bash
-# 构建脚本 - 基于 env.sh 中的配置构建并推送镜像
-# 用法：./docker/build.sh [--push] [--no-cache] [--platform linux/amd64]
+# Build script - builds and pushes image based on env.sh configuration
+# Usage: ./docker/build.sh [--push] [--no-cache] [--platform linux/amd64]
 
 set -e
 cd "$(dirname "$0")"
 source ./env.sh
 
-# ---- 参数解析 ----
+# ---- Argument parsing ----
 PLATFORM="linux/amd64"
 PUSH=false
 NO_CACHE=false
@@ -16,20 +16,20 @@ while [[ $# -gt 0 ]]; do
         --platform) PLATFORM="$2"; shift 2 ;;
         --push)     PUSH=true; shift ;;
         --no-cache) NO_CACHE=true; shift ;;
-        *) echo "未知参数: $1"; echo "用法: $0 [--platform] [--push] [--no-cache]"; exit 1 ;;
+        *) echo "Unknown argument: $1"; echo "Usage: $0 [--platform] [--push] [--no-cache]"; exit 1 ;;
     esac
 done
 
-# ---- 构建信息 ----
+# ---- Build info ----
 echo "================================================"
-echo "  构建镜像: $PROGRAM:$VERSION"
-echo "  平台:     $PLATFORM"
-echo "  推送:     $PUSH"
+echo "  Image:  $PROGRAM:$VERSION"
+echo "  Platform: $PLATFORM"
+echo "  Push:   $PUSH"
 echo "================================================"
 
-cd ..  # 切换到项目根目录作为构建上下文
+cd ..  # Switch to project root as build context
 
-# ---- 构建 ----
+# ---- Build ----
 BUILD_CMD="docker build --platform $PLATFORM"
 BUILD_CMD="$BUILD_CMD -t $PROGRAM:$VERSION"
 BUILD_CMD="$BUILD_CMD -t $PROGRAM:latest"
@@ -42,16 +42,16 @@ BUILD_CMD="$BUILD_CMD -f docker/Dockerfile ."
 
 eval $BUILD_CMD
 
-# ---- 推送 ----
+# ---- Push ----
 if [ "$PUSH" = true ]; then
-    echo "推送镜像到仓库..."
+    echo "Pushing image to registry..."
     docker push "$PROGRAM:$VERSION"
     docker push "$PROGRAM:latest"
-    echo "推送完成"
+    echo "Push complete"
 fi
 
 echo "================================================"
-echo "  完成: $PROGRAM:$VERSION"
-echo "  本地测试: cd docker && docker-compose up -d"
-echo "  推送:    ./docker/build.sh --push"
+echo "  Done:   $PROGRAM:$VERSION"
+echo "  Local:  cd docker && docker-compose up -d"
+echo "  Push:   ./docker/build.sh --push"
 echo "================================================"

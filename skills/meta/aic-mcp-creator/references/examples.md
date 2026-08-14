@@ -1,4 +1,4 @@
-# MCP-SERVER.md 示例
+# MCP-SERVER.md Examples
 
 ## STDIO
 
@@ -31,7 +31,7 @@ env-required: false
 Provides repository graph analysis through MCP.
 ```
 
-为 `stdio` MCP 生成模板时，如果 Windows 启动方式无法从用户输入或官方分发说明中确认，应先询问用户是否需要 Windows 适配，并索要明确的 `command` / `args`。不要自动推断 `.exe`、`.cmd`、`cmd /c`、PowerShell 或 shell 包装。
+When generating a template for a stdio MCP, if the Windows launch method cannot be confirmed from user input or official distribution instructions, ask the user first whether Windows adaptation is needed, and request explicit command / args. Do not auto-infer .exe, .cmd, cmd /c, PowerShell, or shell wrappers.
 
 ## SSE
 
@@ -91,4 +91,4 @@ env-vars:
 Provides issue lookup and update tools to supported clients.
 ```
 
-这些示例描述源模型，不表示 creator 已经写入任何客户端配置。
+These examples describe the source model and do not imply that the creator has written any client configuration.

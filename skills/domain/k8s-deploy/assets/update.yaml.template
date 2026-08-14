@@ -1,9 +1,9 @@
 # ============================================================
-# {App Name} K8s 增量更新配置
-# 版本：{version} | 生成时间：{timestamp}
-# 用途：仅更新镜像版本，不影响 ConfigMap / Service / Ingress / Secret
-# 命令：kubectl apply -f docker/update.yaml
-# 注意：此文件仅含 Deployment，避免覆盖已有的其他资源配置
+# {App Name} K8s incremental update config
+# Version: {version} | Generated: {timestamp}
+# Purpose: Update image version only; does not affect ConfigMap / Service / Ingress / Secret
+# Command: kubectl apply -f docker/update.yaml
+# Note: This file contains only the Deployment to avoid overwriting other existing resource configs
 # ============================================================
 
 apiVersion: apps/v1
@@ -20,11 +20,11 @@ spec:
     metadata:
       labels:
         app: {app-name}
-        version: "{version}"     # 版本标签同步更新
+        version: "{version}"     # Version label updated in sync
     spec:
       containers:
         - name: {app-name}
-          image: {registry}/{namespace}/{image-name}:{version}   # 唯一需要更新的字段
+          image: {registry}/{namespace}/{image-name}:{version}   # The only field that needs updating
           imagePullPolicy: Always
           ports:
             - name: http

@@ -25,7 +25,7 @@ ANY_PLACEHOLDER_RE = re.compile(r"\{\{[^{}]+\}\}")
 DURATION_RE = re.compile(
     r"^(?=.)(?:[0-9]+(?:\.[0-9]+)?(?:ns|us|µs|ms|s|m|h))+$"
 )
-TODO_RE = re.compile(r"(?:\bTODO\b|\[待确认|待用户确认[：:])", re.IGNORECASE)
+TODO_RE = re.compile(r"(?:\bTODO\b|\[Pending user confirmation[：:])", re.IGNORECASE)
 
 TARGETS = {"claude", "codex", "gemini", "opencode"}
 TRANSPORT_TARGETS = {

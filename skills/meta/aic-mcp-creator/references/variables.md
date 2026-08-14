@@ -1,8 +1,9 @@
-# MCP 变量声明与引用
 
-## 声明格式
+# MCP Variable Declaration and Reference
 
-变量在 `MCP-SERVER.md` frontmatter 的 `env-vars` 中声明：
+## Declaration Format
+
+Variables are declared in the env-vars section of the MCP-SERVER.md frontmatter:
 
 ```yaml
 env-required: true
@@ -13,47 +14,47 @@ env-vars:
     target: mcp
 ```
 
-每个变量项支持：
+Each variable item supports:
 
-| 字段 | 必填 | 规则 |
+| Field | Required | Rules |
 |---|---|---|
-| `name` | 是 | 匹配 `^[A-Z][A-Z0-9_]*$`，同一包内唯一 |
-| `description` | 是 | 说明用途，不包含真实值 |
-| `required` | 是 | YAML 布尔值 |
-| `target` | 是 | 固定为 `mcp` |
-| `default` | 否 | 仅允许稳定、非敏感的字符串默认值 |
+| name | yes | matches ^[A-Z][A-Z0-9_]*$, unique within the package |
+| description | yes | explains the purpose, contains no real values |
+| required | yes | YAML boolean |
+| target | yes | fixed to mcp |
+| default | no | only stable, non-sensitive string default values allowed |
 
-变量名区分大小写。合法示例为 `API_KEY`、`API_BASE_URL`、`AIC_AVAILABLE_CLI_TOOLS`、`MODEL_V2_ENDPOINT`；`api_key`、`2FA_TOKEN`、`API-KEY`、`API.KEY`、`_API_KEY` 均非法。
+Variable names are case-sensitive. Valid examples: API_KEY, API_BASE_URL, AIC_AVAILABLE_CLI_TOOLS, MODEL_V2_ENDPOINT; api_key, 2FA_TOKEN, API-KEY, API.KEY, _API_KEY are all invalid.
 
-## 引用格式
+## Reference Format
 
-标准占位符为：
+The standard placeholder is:
 
 ```text
 {{ aic.env.MCP_TOKEN }}
 ```
 
-只允许在以下字段的字符串值中引用：
+It may only be referenced in the string values of the following fields:
 
-- `command`
-- `args` 的元素
-- `cwd`
-- `env` 的值
-- `url`
-- `headers` 的值
-- `platforms.<goos>.command`
-- `platforms.<goos>.args` 的元素
+- command
+- elements of args
+- cwd
+- values of env
+- url
+- values of headers
+- platforms.<goos>.command
+- elements of platforms.<goos>.args
 
-不允许在键名、`name`、`version`、`description`、`transport`、`targets`、`timeout`、变量声明或 Markdown 正文中引用。
+Referencing is not allowed in key names, name, version, description, transport, targets, timeout, variable declarations, or Markdown body text.
 
-## 一致性规则
+## Consistency Rules
 
-1. 每个占位符必须有且只有一个同名声明。
-2. 每个声明必须至少被允许字段引用一次。
-3. 存在声明或占位符时，`env-required` 必须为 `true`。
-4. `env-required: true` 时 `env-vars` 必须非空。
-5. `env-required: false` 时不得出现 `env-vars` 或占位符。
-6. 变量先由项目 env 解析，再回退到全局 env；registry 不保存解析值。
-7. 变量解析完成前不得写入任何客户端配置。
-8. `required: true` 且缺值时停止整个多目标安装；不得留下部分写入。
-9. `default` 不得保存 token、密码、私有地址或环境专属值。
+1. Each placeholder must have exactly one declaration with the same name.
+2. Each declaration must be referenced at least once in an allowed field.
+3. When declarations or placeholders exist, env-required must be true.
+4. When env-required: true, env-vars must be non-empty.
+5. When env-required: false, no env-vars or placeholders may appear.
+6. Variables are resolved first from the project env, then fall back to the global env; the registry does not store resolved values.
+7. No client configuration may be written before variable resolution is complete.
+8. When required: true and the value is missing, stop the entire multi-target installation; do not leave partial writes.
+9. default must not store tokens, passwords, private addresses, or environment-specific values.
