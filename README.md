@@ -26,7 +26,34 @@ For full introduction, concepts, keybindings, and troubleshooting, visit the **a
 
 > Site URL will be filled in after Cloudflare Pages deployment.
 
-## 2. Installation
+## 2. What this repository is (and isn't)
+
+This repository is **not a marketplace**. It is a reference registry that ships with a small set of conventions and engineering samples.
+
+**The intended workflow is fork-and-own:**
+
+1. **Fork** this repository to your own private repo or team workspace.
+2. **Customize** — add your own Skills, Contexts, MCP server templates, Provider configs, and permission rules. Remove what you don't need.
+3. **Point `aic` at your fork** via the TUI settings panel (`Settings → Registry URL`) or `~/.aic/config.toml`.
+4. **Use `aic sync`** to pull your team's conventions into every project.
+
+The value proposition is **personal, private, or team-internal use**: you maintain one source of truth for your AI coding configuration, and every project you work on inherits the same setup.
+
+What this repository provides:
+
+- A **convention / schema** for how Skills, Contexts, MCP servers, Providers, and permissions are organized.
+- A **small set of sample skills** (dev-plan, git-commit, docker-deploy, etc.) that you can keep, modify, or replace.
+- **Provider example configs** for Claude / Codex / Gemini / OpenCode as a starting point.
+
+What it does **not** provide:
+
+- A public marketplace or app store for Skills.
+- Hosted / cloud-synced registry services.
+- Guaranteed compatibility or support for third-party skills you add to your own fork.
+
+> You are encouraged to treat your fork as the authoritative registry for yourself or your team. This public repository is just the starting point.
+
+## 3. Installation
 
 ### macOS / Linux
 
@@ -63,7 +90,7 @@ aic
 
 For the full quick start, command reference, and configuration paths, see the "Quick Start" and "Keybindings & Commands" pages on the aic documentation site.
 
-## 3. Registry contents
+## 4. Registry contents
 
 This repository is the public Registry and content repository for aic, providing templates consumable by `aic install` / `aic sync`:
 
@@ -132,7 +159,7 @@ Provider example configurations for the four AI tools, used by `aic`'s provider 
 - `permissions/` — Permission templates
 - `gitignore/` — Local ignore rule templates
 
-## 4. Repository structure
+## 5. Repository structure
 
 ```text
 .
@@ -152,7 +179,7 @@ Provider example configurations for the four AI tools, used by `aic`'s provider 
 
 > **Note**: The aic binary is closed-source. This repository does **not** contain aic source code. It only holds Registry content (Skills / Contexts / MCP / Providers templates) and release metadata.
 
-## 5. Registry and aic versions
+## 6. Registry and aic versions
 
 - The root `VERSION` file is the registry's own version, indicating the release state of registry content.
 - The root `aic-release.yaml` records the aic version, binary MD5, and Chinese changelog; `registry.yaml` points to it via the `aic_release` field.
@@ -164,7 +191,7 @@ Maintenance command:
 make set-version VERSION=v0.2.0
 ```
 
-## 6. Contributing & feedback
+## 7. Contributing & feedback
 
 - **Issues**: file issues on GitHub or Gitee
   - GitHub Issues: https://github.com/KaiyuanEra/aic-registry/issues

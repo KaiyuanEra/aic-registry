@@ -26,7 +26,34 @@ aic 是一个**本地优先的 AI 编程配置管理工具**，以一体化 TUI 
 
 > 网站地址待 Cloudflare Pages 部署后回填。
 
-## 2. 安装
+## 2. 本仓库的定位（是什么，不是什么）
+
+本仓库**不是一个 marketplace**。它是一个参考 Registry，附带少量规范与工程样例。
+
+**推荐的使用姿势是 fork 后自用：**
+
+1. **Fork** 本仓库到你自己的私有仓库或团队工作区。
+2. **自定义** — 添加你自己的 Skills、Contexts、MCP server 模板、Provider 配置和权限规则，移除不需要的内容。
+3. **将 `aic` 指向你的 fork** — 通过 TUI 设置面板（`设置 → Registry 地址`）或 `~/.aic/config.toml` 配置。
+4. **使用 `aic sync`** 将团队约定拉取到每个项目中。
+
+价值在于**个人私营或团队内部使用**：你维护一份 AI 编程配置的唯一来源，你参与的每个项目都继承同一套配置。
+
+本仓库提供的是：
+
+- 一套**规范 / schema**：Skills、Contexts、MCP servers、Providers、权限的组织方式。
+- 少量**样例技能**（dev-plan、git-commit、docker-deploy 等），你可以保留、修改或替换。
+- Claude / Codex / Gemini / OpenCode 的**Provider 示例配置**，作为起点。
+
+本仓库**不**提供：
+
+- 公开的 Skill 商店或应用市场。
+- 托管 / 云同步的 Registry 服务。
+- 对你 fork 中自行添加的第三方 skill 的兼容性保证或支持。
+
+> 鼓励你将自己的 fork 作为自己或团队的权威 Registry。本公开仓库只是起点。
+
+## 3. 安装
 
 ### macOS / Linux
 
@@ -63,7 +90,7 @@ aic
 
 完整的快速开始、命令参考、配置路径说明请参考 aic 文档站的「快速开始」与「快捷键与命令参考」页面。
 
-## 3. Registry 内容
+## 4. Registry 内容
 
 本仓库是 aic 的公共 Registry 与内容仓库，提供以下可被 `aic install` / `aic sync` 使用的模板：
 
@@ -132,7 +159,7 @@ aic
 - `permissions/` — 权限模板
 - `gitignore/` — 本地忽略规则模板
 
-## 4. 仓库结构
+## 5. 仓库结构
 
 ```text
 .
@@ -152,7 +179,7 @@ aic
 
 > **注意**：aic 核心二进制是闭源的，本仓库**不包含** aic 源码。仓库仅存放 Registry 内容（Skills / Contexts / MCP / Providers 等模板）与发布元数据。
 
-## 5. Registry 与 aic 版本
+## 6. Registry 与 aic 版本
 
 - 根目录 `VERSION` 是 registry 自身版本，用于标识 registry 内容的发布状态。
 - 根目录 `aic-release.yaml` 记录 aic 版本、二进制 MD5 和中文更新列表；`registry.yaml` 通过 `aic_release` 字段指向该文件。
@@ -164,7 +191,7 @@ aic
 make set-version VERSION=v0.2.0
 ```
 
-## 6. 贡献与反馈
+## 7. 贡献与反馈
 
 - **问题反馈**：在 GitHub 或 Gitee 仓库提 Issue
   - GitHub Issues：https://github.com/KaiyuanEra/aic-registry/issues
