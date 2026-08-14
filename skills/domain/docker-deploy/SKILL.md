@@ -155,5 +155,4 @@ RUN sed -i "s/dl-cdn.alpinelinux.org/${APT_MIRROR}/g" /etc/apk/repositories \
 ```
 docker/ 目录已生成，构建命令：./docker/build.sh
 如需 K8s 部署配置，继续执行 k8s-deploy skill
-如需更新 CI/CD，继续执行 cicd-pipeline skill
 ```
