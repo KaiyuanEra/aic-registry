@@ -1,250 +1,220 @@
-# aic skills
+**English** | [简体中文](./README.zh-CN.md)
 
-公司内部 AI Skill 仓库与 `aic`（Skill Manager）工具源码，统一管理 Claude Code / Codex CLI / Gemini CLI 的项目级技能能力。
+# aic-registry
 
-- 仓库：`git@git.ifogging.cn:rd/op/skills.git`
-- 组成：`skills/`（技能库）+ `aic/`（管理工具）
+> **Public Registry and content repository for aic.**
+> aic itself is a local-first AI coding configuration manager (closed-source, free for personal use). The binary is distributed via Releases in this repository.
 
-## 1. 项目背景与要解决的问题
+- GitHub (overseas): https://github.com/KaiyuanEra/aic-registry
+- Gitee (China primary): https://gitee.com/KaiyuanEra/aic-registry
 
-### 1.1 背景
+## 1. What is aic
 
-2026 年 AI 工程从“只看模型能力”转向“模型 + 系统约束”的工程范式：
+aic is a **local-first AI coding configuration manager** with a unified TUI as its primary entry point. It manages Skills, Context, MCP servers, environment variables, permissions, and providers for Claude Code, Codex CLI, Gemini CLI, and OpenCode — all from one terminal UI that fits naturally into your workflow.
 
-`Agent = Model + Harness`
+- **TUI is the primary entry point**: Skills / Contexts / MCP / Ops / Env / Permission / Provider — 7 panels.
+- **Local-first**: project config lives in `<project>/.aic/`, user config in `~/.aic/`, sensitive env values are never stored in a database.
+- **Portable**: team conventions travel with the project — new members clone and `aic sync` to restore the full setup.
+- **Restrained**: no accounts, no cloud sync, no billing, no paywalls.
 
-其中 Harness 不是单点能力，而是一整套可执行的工程系统：
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/tui-hero-dark.webp">
+  <img src="assets/tui-hero-light.webp" alt="aic TUI main interface: Skills / Contexts / MCP / Ops / Env / Permission / Provider — 7 panels" width="800">
+</picture>
 
-- 记忆与上下文管理
-- 工具与技能（Skill）
-- 编排与协作
-- 基础设施与权限边界
-- 评估与验证闭环
-- 执行追踪与可观测性
+For full introduction, concepts, keybindings, and troubleshooting, visit the **aic documentation site**:
 
-在这个范式下，Skill 的价值是把高频、可标准化的操作从“临场推理”变成“结构化执行”。
+> Site URL will be filled in after Cloudflare Pages deployment.
 
-### 1.2 Harness 与“模型能力至上”差异
+## 2. What this repository is (and isn't)
 
-在工程实践里，Harness 更强调“系统收敛能力”，而不只看模型上限：
+This repository is **not a marketplace**. It is a reference registry that ships with a small set of conventions and engineering samples.
 
-- 能力至上 vs 系统收敛：模型“能做”不等于“稳定做到”
-- 规则理解 vs 规则执行：仅靠 Prompt 约束，常出现“理解但不遵守”
-- 静态数据飞轮 vs 运行时飞轮：高质量执行轨迹本身就是可复用数据资产
+**The intended workflow is fork-and-own:**
 
-Skill 在这套理论中的定位是“将不确定推理转成确定流程”的承重模块：把工具调用、参数校验、异常处理、结果格式固定在系统层执行。
+1. **Fork** this repository to your own private repo or team workspace.
+2. **Customize** — add your own Skills, Contexts, MCP server templates, Provider configs, and permission rules. Remove what you don't need.
+3. **Point `aic` at your fork** via the TUI settings panel (`Settings → Registry URL`) or `~/.aic/config.toml`.
+4. **Use `aic sync`** to pull your team's conventions into every project.
 
-### 1.3 当前痛点
+The value proposition is **personal, private, or team-internal use**: you maintain one source of truth for your AI coding configuration, and every project you work on inherits the same setup.
 
-在没有统一管理前，团队常见问题：
+What this repository provides:
 
-- 同一份 Skill 需要在多个工具目录重复维护，更新容易遗漏
-- 新成员或新工具接入没有标准初始化流程
-- 缺少统一版本与分发机制，项目间能力难复用
-- 含敏感变量的 Skill 缺少规范注入机制
+- A **convention / schema** for how Skills, Contexts, MCP servers, Providers, and permissions are organized.
+- A **small set of sample skills** (dev-plan, git-commit, docker-deploy, etc.) that you can keep, modify, or replace.
+- **Provider example configs** for Claude / Codex / Gemini / OpenCode as a starting point.
 
-### 1.4 本项目解决方案
+What it does **not** provide:
 
-本仓库通过两层体系解决上述问题：
+- A public marketplace or app store for Skills.
+- Hosted / cloud-synced registry services.
+- Guaranteed compatibility or support for third-party skills you add to your own fork.
+- **Adapted open-source skills** — useful skills from the open-source community, translated with proper versioning and
+  private-variable adaptation, curated as reusable engineering assets. Use the registry's built-in `aic-skill-creator`,
+  `aic-contexts-creator`, and `aic-mcp-creator` tools for authoring and schema validation.
 
-- `skills/`：公司内部 Skill 唯一来源（统一版本、统一索引、统一规范）
-- `aic/`：本机工具，负责安装、同步、软链接分发、环境变量渲染、TUI 管理
+>  Important: after modifying any version number, run make index in the root directory to regenerate and validate
+skills/index.yaml, contexts/index.yaml, and other index files, ensuring Registry metadata stays consistent with actual
+content.
 
-### Registry 与 aic 版本
+> You are encouraged to treat your fork as the authoritative registry for yourself or your team. This public repository is just the starting point.
 
-- 根目录 `VERSION` 是 registry 自身版本，用于标识 registry 内容的发布状态。
-- 根目录 `aic-release.yaml` 记录 aic 版本、二进制 MD5 和中文更新列表；`registry.yaml` 通过 `aic_release` 字段指向该文件。
-- aic 拉取 registry 后应读取该文件，将自身版本与 `version` 精确比较；不一致时展示 `features` 并提示升级。
+## 3. Installation
 
-维护命令：
+### macOS / Linux
 
-```bash
-make set-version VERSION=v0.2.0
-```
+Download the archive for your platform from the Release page and extract it to your PATH:
 
-## 2. 目前集成的 Skills
-
-当前注册表（`skills/index.yaml`）已集成以下技能：
-
-
-| Skill               | 版本    | 分类   | 作用简介                                                        | 是否依赖 Env |
-| ------------------- | ------- | ------ | --------------------------------------------------------------- | ------------ |
-| `dev-plan`          | `1.0.0` | domain | 生成/增量更新`dev-plan.md`，按 Phase/Task 拆解开发计划          | 否           |
-| `git-commit`        | `1.0.0` | common | 基于暂存变更与上下文生成规范中文 commit message 并提交          | 否           |
-| `glab-manage`       | `1.0.2` | common | 按开发计划在 GitLab 创建 Milestone/Issue 并回写编号             | 是           |
-| `go-release-gitlab` | `1.1.0` | common | go 程序本地交叉编译打包并发布到 GitLab Release                  | 是           |
-| `aic-skill-creator` | `1.0.1` | common | 编写/优化 aic 内部`SKILL.md` 的设计与触发描述                   | 否           |
-| `readme-doc`        | `1.0.1` | common | 生成本地格式化的 README.md 文件                                 | 否           |
-| `k8s-deploy`        | `1.0.1` | common | 生成全量 k8s.yaml + 增量 update.yaml                            | 否           |
-| `docker-deploy`     | `1.0.1` | common | 生成 Dockerfile + docker-compose.yml + build.sh + .dockerignore | 否           |
-| `cicd-pipeline`     | `1.0.1` | common | 生成/维护 .gitlab-ci.yml                                        | 否           |
-
-说明：
-
-- `Env=是` 的 Skill 需要在项目级或全局环境中配置变量（由 `aic env` 管理）。
-- 具体触发语义与用法见各 Skill 目录下 `SKILL.md`。
-
-### skill 工作流
-
-如何把这些 skill 串联成一个有序工作流
-
-```yaml
-需求文档 → dev-plan（拆分任务）
-           → glab-manage（创建 Issue/Milestone）
-           → challenge（审查代码）
-           → git-commit（规范提交）
-           → dev-plan（归档 Phase）
-```
-
-通过工作流的设计将这些 skill 串联起来，实现从需求到部署的全生命周期管理,同时构建 可 gitlab 托管的项目级上下文状态存储。
-
-## 3. 安装方式
-
-### 3.1 一键安装 aic（推荐）
-
-#### Version 1.0.1
+- GitHub Releases (overseas): https://github.com/KaiyuanEra/aic-registry/releases
+- Gitee Releases (China): https://gitee.com/KaiyuanEra/aic-registry/releases
 
 ```bash
-curl -fsSL http://62.234.2.75:58089/aic/v1.0.1/install.sh | sh
+# Example: macOS arm64
+tar -xzf aic_<version>_darwin_arm64.tar.gz
+sudo mv aic /usr/local/bin/
+aic --version
 ```
 
-#### Version 1.0.2
+> A one-line install script (with Gitee / GitHub mirror switching and version pinning) is in preparation.
 
-```bash
-curl -fsSL http://62.234.2.75:58089/aic/v1.0.2/install.sh | sh
-```
+### Windows (Beta)
 
-### 3.2 本地源码构建
+Windows is currently in Beta: one-line install and `tar.gz` release packages are not yet supported. Without administrator privileges or Developer Mode, skill distribution falls back to managed-directory copy sync instead of creating symlinks.
 
-```bash
-cd aic
-make build
-./bin/aic --help
-```
+### First run
 
-### 3.3 项目初始化与首轮安装
-
-**在业务项目根目录执行:**
+Run in the **root directory of your project**:
 
 ```bash
 aic init
 aic
 ```
 
-常见命令：
+`aic` launches the TUI. From there you can install skills, sync configuration, manage providers, and run project-level operations via the Ops panel.
 
-```bash
-aic install git-commit
-aic sync
-aic env check
-```
+> After installing new Skills / MCPs / Contexts, or changing providers / permissions, you must **restart the corresponding AI tool client** (Claude Code / Codex CLI / Gemini CLI / OpenCode) for changes to take effect. To preserve conversation context, restart via the resume / continue feature.
 
-### 3.4 其他工具兼容性（基于 `.agents/skills/`）
+### Configure the Registry source
 
-`aic` 的通用适配锚点是项目目录下的 `.agents/skills/`。只要工具支持从该目录加载 Skill，就可以直接复用 `aic install / sync / env` 的管理能力。
+Press `,` (comma) inside `aic` or click the ⚙ gear icon in the top-right corner to open Settings, and choose the Registry source that matches your network environment:
 
-- `Cursor CLI`：将 Skill 加载目录指向 `<project>/.agents/skills/` 后即可接入；模型侧可配置官方 API 或国产 API 兼容端点（OpenAI-compatible endpoint），不影响 `aic` 的使用。
-- `OpenCode`：同样使用 `<project>/.agents/skills/` 作为 Skill 来源；完成国产 API 配置接入后，可与 `aic` 管理的 Skill 体系直接适配。
-- `aic` 关注点是 Skill 生命周期与本地渲染，不绑定具体模型供应商；API 切换在工具侧完成即可。
+- **Overseas (default)** — `Registry URL`: `https://github.com/KaiyuanEra/aic-registry`, `Registry Branch`: `en` (optional)
+- **China** — `Registry URL`: `https://gitee.com/KaiyuanEra/aic-registry`, `Registry Branch`: `zh` (optional)
 
-## 4. TUI 界面使用说明（`aic`）
+If the skill list fails to load (network timeout, empty result, or mirror unreachable), switch the `Registry URL` between the two mirrors above and try again.
 
-![image.png](assets/image.png)
+For the full quick start, command reference, and configuration paths, see the "Quick Start" and "Keybindings & Commands" pages on the aic documentation site.
 
-### 4.1 进入方式
+## 4. Registry contents
 
-以下命令在交互终端（TTY）下默认进入 TUI：
+This repository is the public Registry and content repository for aic, providing templates consumable by `aic install` / `aic sync`:
 
-```bash
-aic
-aic tui
-aic list
-```
+### Skills
 
-### 4.2 界面结构
+The registry (`skills/index.yaml`) currently includes the following skills, organized by category:
 
-TUI 由以下面板组成：
 
-- `[技能 Skills]`：查看本地/仓库状态，执行安装、更新、移除、同步
-- `[操作 Ops]`：执行项目级操作（init/sync/check updates/update all/env check/re-render/env edit）
-- `[环境 Env]`：按 skill 维度查看变量，支持新增、编辑、校验、重渲染
-- `[供应商 Provider]`：管理 Claude / Codex / Gemini 多供应商配置切换
+| Category      | Skill                            | Summary                                                                        |
+| ------------- | -------------------------------- | ------------------------------------------------------------------------------ |
+| `common`      | `challenge`                      | Review code from a stranger's perspective; rank risks by severity              |
+| `common`      | `dev-plan`                       | Generate / incrementally update`dev-plan.md` with Phase/Task structure         |
+| `common`      | `git-commit`                     | Generate conventional Chinese commit messages from staged changes              |
+| `common`      | `glab-manage`                    | Create GitLab issues from a dev plan and write back issue numbers              |
+| `common`      | `readme-doc`                     | Generate a formatted README.md for a project                                   |
+| `domain`      | `docker-deploy`                  | Generate Dockerfile + docker-compose.yml + build.sh + .dockerignore            |
+| `domain`      | `k8s-deploy`                     | Generate full k8s.yaml + incremental update.yaml                               |
+| `meta`        | `aic-contexts-creator`           | Create, migrate, and incrementally update context packages for the registry    |
+| `meta`        | `aic-mcp-creator`                | Create, review, and incrementally update MCP server packages for the registry  |
+| `meta`        | `aic-skill-creator`              | Write, design, and improve aic's internal`SKILL.md` files                      |
+| `superpowers` | `brainstorming`                  | Explore user intent, requirements, and design before implementation            |
+| `superpowers` | `systematic-debugging`           | Systematic troubleshooting flow for bugs / test failures / unexpected behavior |
+| `superpowers` | `test-driven-development`        | TDD flow: write tests before implementation                                    |
+| `superpowers` | `verification-before-completion` | Run verification commands and confirm output before claiming work is done      |
+| `superpowers` | `writing-plans`                  | Write implementation plans for multi-step tasks                                |
+| `superpowers` | `using-git-worktrees`            | Isolate workspaces via git worktree                                            |
+| `superpowers` | `dispatching-parallel-agents`    | Dispatch multiple sub-agents in parallel for independent tasks                 |
+| `superpowers` | `executing-plans`                | Execute implementation plans in a separate session with review checkpoints     |
+| `superpowers` | `subagent-driven-development`    | Execute implementation plans with sub-agents in the current session            |
+| `superpowers` | `finishing-a-development-branch` | Decide how to integrate work after implementation is complete                  |
+| `superpowers` | `requesting-code-review`         | Request code review after completing tasks / before merging                    |
+| `superpowers` | `receiving-code-review`          | Process code review feedback with technical rigor                              |
+| `superpowers` | `writing-skills`                 | Create, edit, and verify skills                                                |
+| `superpowers` | `using-superpowers`              | Establish skill discovery and usage at the start of a session                  |
 
-Skills 面板核心状态：
+For the full index and each skill's trigger semantics, see `skills/index.yaml` and the `SKILL.md` in each skill directory.
 
-- `installed`
-- `available`
-- `outdated`
-- `broken`
-- `env-missing`
+### Contexts
 
-### 4.3 快捷键
+Project-level long-term memory templates, organized by development stage:
 
-全局：
+- `01-incubation-prototype` — Incubation / prototype stage
+- `02-iteration-evolution` — Iterative evolution stage
+- `03-maintenance-stable` — Maintenance / stable stage
+- `04-refactor-evolution` — Refactor evolution stage
+- `project-coding-guideline` — Project coding guideline template
 
-- `tab` / `shift+tab`：切换面板（Skills / Ops / Env / Permission / Provider）
-- `h` / `l`：快速切换面板
-- `ctrl+?` / `ctrl+/` / `f1`：打开/关闭帮助
-- `q` 或 `ctrl+z`：退出确认
-- `ctrl+c`：立即退出
+### MCP Servers
 
-Skills 面板：
+MCP server templates installable via `aic mcp install`:
 
-- `↑/↓`：选择 Skill
-- `enter`：切换 list/detail 焦点
-- `1..6`：状态过滤（all/installed/available/outdated/broken/env-missing）
-- `i`：安装当前 Skill
-- `u`：更新当前 Skill
-- `r`：移除当前 Skill（带确认）
-- `s`：同步
-- `U`：更新全部
-- `e`：跳转 Env 面板
+- `codegraph`
+- `searxng-http`
 
-Detail（详情）焦点下：
+### Providers
 
-- `j/k` 或 `↑/↓`：逐行滚动
-- `g/G`：跳转顶部/底部
-- `esc`：返回列表焦点
+Provider example configurations for the four AI tools, used by `aic`'s provider multi-model switching:
 
-Ops 面板：
+- `providers/claude/`
+- `providers/codex/`
+- `providers/gemini/`
+- `providers/opencode/`
 
-- `↑/↓`：选择操作
-- `enter`：执行操作
+### Other
 
-Env 面板：
+- `permissions/` — Permission templates
+- `gitignore/` — Local ignore rule templates
 
-- `↑/↓`：选择变量项
-- `enter` / `e`：编辑当前变量
-- `a`：新增变量
-- `c`：变量完整性检查
-- `r`：重渲染 env-required skills
-
-Env 编辑弹窗：
-
-- `tab` / `shift+tab`：切换字段（Key / Value / Target）
-- `←/→`（或 `h/l`）切换写入目标（`project` / `global`）
-- `enter` 或 `ctrl+s`：保存
-- `esc`：取消
-
-Provider 面板：
-
-- `←/→`：切换子标签（Claude / Codex / Gemini）
-- `↑/↓`：选择目标 Provider
-- `enter` 或 `s`：触发切换确认
-- 切换后自动完成配置备份与替换，需重启对应工具生效
-
-## 5. 仓库结构
+## 5. Repository structure
 
 ```text
 .
-├── skills/          # 内部 Skill 库（含 index.yaml）
-├── aic/             # aic 工具源码（Go）
-├── docs/            # 仓库级文档
+├── skills/          # Public skill library (with index.yaml)
+├── contexts/        # Context templates (by development stage)
+├── mcp-servers/     # MCP server templates
+├── providers/       # Provider example configs (claude / codex / gemini / opencode)
+├── permissions/     # Permission templates
+├── gitignore/       # Local ignore rule templates
+├── docs/            # Repository-level documentation
+├── scripts/         # Index generation and other utility scripts
+├── registry.yaml    # Registry metadata
+├── aic-release.yaml # aic version, MD5, and changelog
+├── VERSION          # Registry's own version
 └── README.md
 ```
 
-## 6. 参考文档
+> **Note**: The aic binary is closed-source. This repository does **not** contain aic source code. It only holds Registry content (Skills / Contexts / MCP / Providers templates) and release metadata.
 
-- `aic` 详细命令文档：[`aic/README.md`](aic/README.md)
-- Makefile 工程化说明：[`aic/docs/makefile.md`](aic/docs/makefile.md)
-- 开发计划与里程碑：[`dev-plan.md`](dev-plan.md)
+## 6. Registry and aic versions
+
+- The root `VERSION` file is the registry's own version, indicating the release state of registry content.
+- The root `aic-release.yaml` records the aic version, binary MD5, and Chinese changelog; `registry.yaml` points to it via the `aic_release` field.
+- After pulling the registry, aic reads this file and compares its own version with `version`; if they differ, it displays `features` and prompts for an upgrade.
+
+Maintenance command:
+
+```bash
+make set-version VERSION=v0.2.0
+```
+
+## 7. Contributing & feedback
+
+- **Issues**: file issues on GitHub or Gitee
+  - GitHub Issues: https://github.com/KaiyuanEra/aic-registry/issues
+  - Gitee Issues: https://gitee.com/KaiyuanEra/aic-registry/issues
+- **Email**: kaiyuanera@zohomail.com
+- **Documentation site**: visit the aic documentation site for full docs (link to be filled in after Cloudflare Pages deployment)
+
+## License
+
+The Skills / Contexts / MCP server / Provider templates and other content in this repository are publicly usable.

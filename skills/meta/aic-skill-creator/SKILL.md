@@ -1,6 +1,6 @@
 ---
 name: aic-skill-creator
-version: 2.1.0
+version: 2.2.0
 description: >
   编写、设计、改进 aic 内部 SKILL.md 文件。
   Use when 创建新 skill、从零写 SKILL.md、优化 skill 的 description 触发质量、
@@ -173,7 +173,24 @@ scripts/self-test.sh <skill-name>
 
 ---
 
-### Step 7 — 提交 MR
+### Step 7 — 验证与交付
+
+完成文件后运行：
+
+```bash
+make index
+scripts/validate.sh skills/<category>/<skill-name>/SKILL.md
+make validate
+git diff -- skills/<category>/<skill-name>/ skills/index.yaml
+```
+
+`skills/index.yaml` 是生成文件，不让用户手工维护。生成器递归扫描 `skills/**/SKILL.md`，条目版本来自源文件，registry 版本来自根目录 `VERSION`。
+
+`validate.sh` 做单文件正则检查（字段存在性、name 与目录名一致、version 语义化、env-vars 变量名合法），但 `indexgen.py` 的 `parse_frontmatter` 真正解析 YAML frontmatter（含 `>`/`|` block scalar），能抓到前者漏掉的问题：frontmatter 前导空行导致首行非 `---`、block scalar 缩进错误或内容为空、name/version/description 缺失、跨文件 name+version 重复。
+
+验证必须覆盖：frontmatter 以 `---` 开头且有终止符；name 与目录名一致；version 语义化；description 非空；env-required 与 env-vars 声明匹配；正文 < 500 行；indexgen 解析全部 SKILL.md 无报错；索引的 version、description 和 path 与源文件一致。
+
+交付时确保 version 已在 SKILL.md frontmatter 中设置，提交源 `SKILL.md` 而非手工编辑的索引：
 
 ```bash
 # 确保 version 已在 SKILL.md frontmatter 中设置
@@ -183,7 +200,7 @@ git commit -m "feat(skill): add <skill-name> v1.0.0"
 # 推送并在 GitLab 创建 MR，指向 dev 分支
 ```
 
-MR 合并后，工程师可通过 `aic install <skill-name>` 安装。
+说明 skill 名称、版本变化、修改文件和验证结果。明确说明索引已由生成器刷新。MR 合并后，工程师可通过 `aic install <skill-name>` 安装。
 
 ---
 
