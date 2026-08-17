@@ -95,6 +95,15 @@ aic
 
 > After installing new Skills / MCPs / Contexts, or changing providers / permissions, you must **restart the corresponding AI tool client** (Claude Code / Codex CLI / Gemini CLI / OpenCode) for changes to take effect. To preserve conversation context, restart via the resume / continue feature.
 
+### Configure the Registry source
+
+Press `,` (comma) inside `aic` or click the ⚙ gear icon in the top-right corner to open Settings, and choose the Registry source that matches your network environment:
+
+- **Overseas (default)** — `Registry URL`: `https://github.com/KaiyuanEra/aic-registry`, `Registry Branch`: `en` (optional)
+- **China** — `Registry URL`: `https://gitee.com/KaiyuanEra/aic-registry`, `Registry Branch`: `zh` (optional)
+
+If the skill list fails to load (network timeout, empty result, or mirror unreachable), switch the `Registry URL` between the two mirrors above and try again.
+
 For the full quick start, command reference, and configuration paths, see the "Quick Start" and "Keybindings & Commands" pages on the aic documentation site.
 
 ## 4. Registry contents

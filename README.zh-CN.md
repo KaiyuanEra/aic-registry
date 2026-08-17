@@ -93,6 +93,15 @@ aic
 
 > 安装新的 Skill / MCP / Context，或更改 Provider、权限后，需要**重启对应的 AI 工具客户端**（Claude Code / Codex CLI / Gemini CLI / OpenCode）才能生效。如需保留对话上下文，以 resume / continue 方式重启即可。
 
+### 选择 Registry 源
+
+在 `aic` 内按 `,`（逗号）快捷键，或点击右上角的 ⚙ 齿轮图标打开设置，按所在网络环境选择 Registry 源：
+
+- **海外环境（程序默认）** — `Registry URL`：`https://github.com/KaiyuanEra/aic-registry`，`Registry Branch`：`en`（可选）
+- **国内环境** — `Registry URL`：`https://gitee.com/KaiyuanEra/aic-registry`，`Registry Branch`：`zh`（可选）
+
+如果出现技能列表刷不出来（网络超时、列表为空、镜像不可达）等情况，可在两个镜像间切换 `Registry URL` 后重试。
+
 完整的快速开始、命令参考、配置路径说明请参考 aic 文档站的「快速开始」与「快捷键与命令参考」页面。
 
 ## 4. Registry 内容
