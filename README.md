@@ -2,6 +2,8 @@
 
 # aic-registry
 
+Official site: [aic](https://aic-web-921.pages.dev/)
+
 > **Public Registry and content repository for aic.**
 > aic itself is a local-first AI coding configuration manager (closed-source, free for personal use). The binary is distributed via Releases in this repository.
 

@@ -2,6 +2,8 @@
 
 # aic-registry
 
+唯一官网：[aic](https://aic-web-921.pages.dev/)
+
 > **aic 的公共 Registry 与内容仓库。**
 > aic 本身是一个本地优先的 AI 编程配置管理工具（闭源、个人免费），通过本仓库的 Release 分发二进制包。
 
