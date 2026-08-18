@@ -5,7 +5,7 @@
 Official site: [aic](https://aic-web-921.pages.dev/)
 
 > **Public Registry and content repository for aic.**
-> aic itself is a local-first AI coding configuration manager (closed-source, free for personal use). The binary is distributed via Releases in this repository.
+> aic itself is a local-first AI coding configuration manager . The binary is distributed via Releases in this repository.
 
 - GitHub (overseas): https://github.com/KaiyuanEra/aic-registry
 - Gitee (China primary): https://gitee.com/KaiyuanEra/aic-registry
@@ -26,7 +26,6 @@ aic is a **local-first AI coding configuration manager** with a unified TUI as i
 
 For full introduction, concepts, keybindings, and troubleshooting, visit the **aic documentation site**:
 
-> Site URL will be filled in after Cloudflare Pages deployment.
 
 ## 2. What this repository is (and isn't)
 
@@ -77,8 +76,6 @@ tar -xzf aic_<version>_darwin_arm64.tar.gz
 sudo mv aic /usr/local/bin/
 aic --version
 ```
-
-> A one-line install script (with Gitee / GitHub mirror switching and version pinning) is in preparation.
 
 ### Windows (Beta)
 
@@ -203,11 +200,7 @@ Provider example configurations for the four AI tools, used by `aic`'s provider 
 - The root `aic-release.yaml` records the aic version, binary MD5, and Chinese changelog; `registry.yaml` points to it via the `aic_release` field.
 - After pulling the registry, aic reads this file and compares its own version with `version`; if they differ, it displays `features` and prompts for an upgrade.
 
-Maintenance command:
 
-```bash
-make set-version VERSION=v0.2.0
-```
 
 ## 7. Contributing & feedback
 
@@ -215,7 +208,7 @@ make set-version VERSION=v0.2.0
   - GitHub Issues: https://github.com/KaiyuanEra/aic-registry/issues
   - Gitee Issues: https://gitee.com/KaiyuanEra/aic-registry/issues
 - **Email**: kaiyuanera@zohomail.com
-- **Documentation site**: visit the aic documentation site for full docs (link to be filled in after Cloudflare Pages deployment)
+- **Documentation site**: visit the aic documentation [site for full docs](https://aic-web-921.pages.dev/) 
 
 ## License
 

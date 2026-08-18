@@ -5,7 +5,7 @@
 唯一官网：[aic](https://aic-web-921.pages.dev/)
 
 > **aic 的公共 Registry 与内容仓库。**
-> aic 本身是一个本地优先的 AI 编程配置管理工具（闭源、个人免费），通过本仓库的 Release 分发二进制包。
+> aic 本身是一个本地优先的 AI 编程配置管理工具，通过本仓库的 Release 分发二进制包。
 
 - GitHub（海外）：https://github.com/KaiyuanEra/aic-registry
 - Gitee（国内主）：https://gitee.com/KaiyuanEra/aic-registry
@@ -26,7 +26,6 @@ aic 是一个**本地优先的 AI 编程配置管理工具**，以一体化 TUI 
 
 完整介绍、概念、快捷键参考与故障排查请访问 **aic 文档站**：
 
-> 网站地址待 Cloudflare Pages 部署后回填。
 
 ## 2. 本仓库的定位（是什么，不是什么）
 
@@ -76,7 +75,6 @@ sudo mv aic /usr/local/bin/
 aic --version
 ```
 
-> 一键安装脚本（支持 Gitee / GitHub 镜像切换与版本指定）正在准备中。
 
 ### Windows（Beta）
 
@@ -201,11 +199,7 @@ aic
 - 根目录 `aic-release.yaml` 记录 aic 版本、二进制 MD5 和中文更新列表；`registry.yaml` 通过 `aic_release` 字段指向该文件。
 - aic 拉取 registry 后会读取该文件，将自身版本与 `version` 精确比较；不一致时展示 `features` 并提示升级。
 
-维护命令：
 
-```bash
-make set-version VERSION=v0.2.0
-```
 
 ## 7. 贡献与反馈
 
@@ -213,7 +207,7 @@ make set-version VERSION=v0.2.0
   - GitHub Issues：https://github.com/KaiyuanEra/aic-registry/issues
   - Gitee Issues：https://gitee.com/KaiyuanEra/aic-registry/issues
 - **邮箱**：kaiyuanera@zohomail.com
-- **文档站**：完整文档请访问 aic 文档站（Cloudflare Pages 部署后回填链接）
+- **文档站**：完整文档请访问 [aic 文档站](https://aic-web-921.pages.dev/)
 
 ## License
 
